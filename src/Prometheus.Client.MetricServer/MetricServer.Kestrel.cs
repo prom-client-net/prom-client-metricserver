@@ -12,28 +12,43 @@ using Prometheus.Client.Advanced;
 
 namespace Prometheus.Client.MetricServer
 {
-    public class MetricServer : MetricHandler, IMetricServer
+
+    /// <summary>
+    ///     MetricSever based of Kestrel
+    /// </summary>
+    public class MetricServer : BaseMetricServer, IMetricServer
     {
         private readonly X509Certificate2 _certificate;
         private readonly string _hostAddress;
         private IWebHost _host;
 
+        /// <summary>
+        ///     Constructor
+        /// </summary>
         public MetricServer(int port, bool useHttps = false)
             : this("+", port, Consts.DefaultUrl, null, null, null, useHttps)
         {
         }
 
+        /// <summary>
+        ///     Constructor
+        /// </summary>
         public MetricServer(string host, int port, bool useHttps = false)
             : this(host, port, Consts.DefaultUrl, null, null, null, useHttps)
         {
-
         }
 
+        /// <summary>
+        ///     Constructor
+        /// </summary>
         public MetricServer(string host, int port, string url, bool useHttps = false)
             : this(host, port, url, null, null, null, useHttps)
         {
         }
 
+        /// <summary>
+        ///     Constructor
+        /// </summary>
         public MetricServer(string hostname, int port, string url, IEnumerable<IOnDemandCollector> standardCollectors = null, ICollectorRegistry registry = null, X509Certificate2 certificate = null, bool useHttps = false)
             : base(standardCollectors, registry)
         {
@@ -46,6 +61,9 @@ namespace Prometheus.Client.MetricServer
         }
 
 
+        /// <summary>
+        ///     Server is Running?
+        /// </summary>
         public bool IsRunning => _host != null;
 
         /// <inheritdoc />

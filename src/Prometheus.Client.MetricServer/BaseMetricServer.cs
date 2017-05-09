@@ -3,11 +3,20 @@ using Prometheus.Client.Advanced;
 
 namespace Prometheus.Client.MetricServer
 {
-    public abstract class MetricHandler 
+    /// <summary>
+    ///     Base Abstract MetricSever
+    /// </summary>
+    public abstract class BaseMetricServer
     {
+        /// <summary>
+        ///     CollectorRegistry
+        /// </summary>
         protected readonly ICollectorRegistry Registry;
 
-        protected MetricHandler(IEnumerable<IOnDemandCollector> standardCollectors = null,
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        protected BaseMetricServer(IEnumerable<IOnDemandCollector> standardCollectors = null,
             ICollectorRegistry registry = null)
         {
             Registry = registry ?? CollectorRegistry.Instance;
@@ -19,6 +28,5 @@ namespace Prometheus.Client.MetricServer
 
             CollectorRegistry.Instance.RegisterOnDemandCollectors(standardCollectors);
         }
-
     }
 }

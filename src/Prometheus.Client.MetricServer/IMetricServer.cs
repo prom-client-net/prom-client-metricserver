@@ -1,5 +1,8 @@
 ﻿namespace Prometheus.Client.MetricServer
 {
+    /// <summary>
+    ///     MetricSever
+    /// </summary>
     public interface IMetricServer
     {
         /// <summary>

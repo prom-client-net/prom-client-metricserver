@@ -6,26 +6,40 @@ using Prometheus.Client.Advanced;
 
 namespace Prometheus.Client.MetricServer
 {
-    public class MetricServer : MetricHandler, IMetricServer
+    /// <summary>
+    ///     MetricSever based of HttpListener
+    /// </summary>
+    public class MetricServer : BaseMetricServer, IMetricServer
     {
         private readonly HttpListener _httpListener = new HttpListener();
 
+        /// <summary>
+        ///     Constructor
+        /// </summary>
         public MetricServer(int port, bool useHttps = false)
             : this("+", port, Consts.DefaultUrl, null, null, useHttps)
         {
         }
 
+        /// <summary>
+        ///     Constructor
+        /// </summary>
         public MetricServer(string host, int port, bool useHttps = false)
             : this(host, port, Consts.DefaultUrl, null, null, useHttps)
         {
-
         }
 
+        /// <summary>
+        ///     Constructor
+        /// </summary>
         public MetricServer(string host, int port, string url, bool useHttps = false)
             : this(host, port, url, null, null, useHttps)
         {
         }
 
+        /// <summary>
+        ///     Constructor
+        /// </summary>
         public MetricServer(string hostname, int port, string url, IEnumerable<IOnDemandCollector> standardCollectors = null, ICollectorRegistry registry = null, bool useHttps = false)
             : base(standardCollectors, registry)
         {
@@ -57,7 +71,6 @@ namespace Prometheus.Client.MetricServer
                 }
 
                 response.Close();
-
             }, null);
         }
 
