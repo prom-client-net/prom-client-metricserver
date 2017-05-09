@@ -1,0 +1,13 @@
+version: '{build}-{branch}'
+image: Visual Studio 2017
+build_script:
+- cmd: dotnet restore src\Prometheus.Client.MetricServer && dotnet pack src\Prometheus.Client.MetricServer -c Release --include-symbols
+artifacts:
+- path: '**\*.nupkg'
+  name: All Nupkg
+deploy:
+- provider: NuGet
+  api_key:
+    secure: vukCl5k+S4fJtqeYNiB9ufy/NUCw+60cPcqnPoqvykBjSo8Ub8QtEfZNN9qvj5Jh
+  on:
+    appveyor_repo_tag: true
