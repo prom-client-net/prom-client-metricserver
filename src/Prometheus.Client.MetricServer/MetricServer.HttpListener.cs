@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 using System.Net;
-using Prometheus.Client.Advanced;
+using Prometheus.Client.Collectors;
 
 namespace Prometheus.Client.MetricServer
 {

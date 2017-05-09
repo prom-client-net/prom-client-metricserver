@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Prometheus.Client.Advanced;
+using Prometheus.Client.Collectors;
 
 namespace Prometheus.Client.MetricServer
 {
