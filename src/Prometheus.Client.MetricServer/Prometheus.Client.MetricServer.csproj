@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>MetricServer for the Prometheus.Client</Description>
+    <Copyright>2017 © Sergey Kuznetsov</Copyright>
+    <AssemblyTitle>Prometheus.Client.MetricServer</AssemblyTitle>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <Authors>Sergey Kuznetsov</Authors>
+    <TargetFrameworks>net45;netstandard1.3</TargetFrameworks>
+    <AssemblyName>Prometheus.Client.MetricServer</AssemblyName>
+    <PackageId>Prometheus.Client.MetricServer</PackageId>
+    <PackageTags>prometheus;metrics</PackageTags>
+    <PackageIconUrl>https://image.ibb.co/k4Sc0k/prometheus.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/phnx47/Prometheus.Client.MetricServer</PackageProjectUrl>
+    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/phnx47/Prometheus.MetricServer</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Prometheus.Client" Version="1.0.0" />
+  </ItemGroup>
+
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <DefineConstants>$(DefineConstants);COREFX</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel">
+      <Version>1.1.1</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https">
+      <Version>1.1.1</Version>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>
