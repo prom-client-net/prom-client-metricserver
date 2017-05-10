@@ -3,6 +3,9 @@
 using System.Collections.Generic;
 using System.Net;
 using Prometheus.Client.Collectors;
+using System.IO;
+using System.Text;
+using System.Diagnostics;
 
 namespace Prometheus.Client.MetricServer
 {
@@ -12,6 +15,7 @@ namespace Prometheus.Client.MetricServer
     public class MetricServer : BaseMetricServer, IMetricServer
     {
         private readonly HttpListener _httpListener = new HttpListener();
+        private bool _isListening = false;
 
         /// <summary>
         ///     Constructor
@@ -51,32 +55,47 @@ namespace Prometheus.Client.MetricServer
         public void Start()
         {
             _httpListener.Start();
-            _httpListener.BeginGetContext(ar =>
+            _isListening = true;
+
+            while (_isListening)
             {
-                var httpListenerContext = _httpListener.EndGetContext(ar);
-                var request = httpListenerContext.Request;
-                var response = httpListenerContext.Response;
-
-                response.StatusCode = 200;
-
-                var acceptHeader = request.Headers.Get("Accept");
-                var acceptHeaders = acceptHeader?.Split(',');
-                var contentType = ScrapeHandler.GetContentType(acceptHeaders);
-                response.ContentType = contentType;
-
-                using (var outputStream = response.OutputStream)
+                try
                 {
-                    var collected = Registry.CollectAll();
-                    ScrapeHandler.ProcessScrapeRequest(collected, contentType, outputStream);
+                    HttpListenerContext context = _httpListener.GetContext();
+                    HttpListenerRequest request = context.Request;
+                    HttpListenerResponse response = context.Response;
+
+                    string requestBody;
+                    Stream inputStream = request.InputStream;
+                    Encoding encoding = request.ContentEncoding;
+                    StreamReader reader = new StreamReader(inputStream, encoding);
+                    requestBody = reader.ReadToEnd();
+                    response.StatusCode = 200;
+
+                    var acceptHeader = request.Headers.Get("Accept");
+                    var acceptHeaders = acceptHeader?.Split(',');
+                    var contentType = ScrapeHandler.GetContentType(acceptHeaders);
+                    response.ContentType = contentType;
+
+                    using (Stream outputStream = response.OutputStream)
+                    {
+                        var collected = Registry.CollectAll();
+                        ScrapeHandler.ProcessScrapeRequest(collected, contentType, outputStream);
+                    }
                 }
 
-                response.Close();
-            }, null);
+                catch (HttpListenerException ex)
+                {
+                    Trace.WriteLine($"Error in MetricsServer: {ex}");
+                }
+            }
+
         }
 
         /// <inheritdoc />
         public void Stop()
         {
+            _isListening = false;
             _httpListener.Stop();
             _httpListener.Close();
         }
