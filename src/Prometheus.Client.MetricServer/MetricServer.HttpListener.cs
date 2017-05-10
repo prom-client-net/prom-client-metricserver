@@ -6,6 +6,7 @@ using Prometheus.Client.Collectors;
 using System.IO;
 using System.Text;
 using System.Diagnostics;
+using System.Threading;
 
 namespace Prometheus.Client.MetricServer
 {
@@ -14,6 +15,7 @@ namespace Prometheus.Client.MetricServer
     /// </summary>
     public class MetricServer : BaseMetricServer, IMetricServer
     {
+        private Thread _bgThread;
         private readonly HttpListener _httpListener = new HttpListener();
         private bool _isListening = false;
 
@@ -53,6 +55,16 @@ namespace Prometheus.Client.MetricServer
 
         /// <inheritdoc />
         public void Start()
+        {
+            _bgThread = new Thread(new ThreadStart(StartListen))
+            {
+                IsBackground = true,
+                Name = "MetricsServer"
+            };
+            _bgThread.Start();
+        }
+
+        private void StartListen()
         {
             _httpListener.Start();
             _isListening = true;
@@ -98,6 +110,7 @@ namespace Prometheus.Client.MetricServer
             _isListening = false;
             _httpListener.Stop();
             _httpListener.Close();
+
         }
     }
 }
