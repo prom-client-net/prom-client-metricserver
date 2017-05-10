@@ -1,12 +1,11 @@
 ﻿#if !COREFX
 
 using System.Collections.Generic;
-using System.Net;
-using Prometheus.Client.Collectors;
-using System.IO;
-using System.Text;
 using System.Diagnostics;
+using System.IO;
+using System.Net;
 using System.Threading;
+using Prometheus.Client.Collectors;
 
 namespace Prometheus.Client.MetricServer
 {
@@ -15,9 +14,9 @@ namespace Prometheus.Client.MetricServer
     /// </summary>
     public class MetricServer : BaseMetricServer, IMetricServer
     {
-        private Thread _bgThread;
         private readonly HttpListener _httpListener = new HttpListener();
-        private bool _isListening = false;
+        private Thread _bgThread;
+        private bool _isListening;
 
         /// <summary>
         ///     Constructor
@@ -56,12 +55,20 @@ namespace Prometheus.Client.MetricServer
         /// <inheritdoc />
         public void Start()
         {
-            _bgThread = new Thread(new ThreadStart(StartListen))
+            _bgThread = new Thread(StartListen)
             {
                 IsBackground = true,
                 Name = "MetricsServer"
             };
             _bgThread.Start();
+        }
+
+        /// <inheritdoc />
+        public void Stop()
+        {
+            _isListening = false;
+            _httpListener.Stop();
+            _httpListener.Close();
         }
 
         private void StartListen()
@@ -73,15 +80,14 @@ namespace Prometheus.Client.MetricServer
             {
                 try
                 {
-                    HttpListenerContext context = _httpListener.GetContext();
-                    HttpListenerRequest request = context.Request;
-                    HttpListenerResponse response = context.Response;
+                    var context = _httpListener.GetContext();
+                    var request = context.Request;
+                    var response = context.Response;
 
-                    string requestBody;
-                    Stream inputStream = request.InputStream;
-                    Encoding encoding = request.ContentEncoding;
-                    StreamReader reader = new StreamReader(inputStream, encoding);
-                    requestBody = reader.ReadToEnd();
+                    var inputStream = request.InputStream;
+                    var encoding = request.ContentEncoding;
+                    var reader = new StreamReader(inputStream, encoding);
+                    reader.ReadToEnd();
                     response.StatusCode = 200;
 
                     var acceptHeader = request.Headers.Get("Accept");
@@ -89,7 +95,7 @@ namespace Prometheus.Client.MetricServer
                     var contentType = ScrapeHandler.GetContentType(acceptHeaders);
                     response.ContentType = contentType;
 
-                    using (Stream outputStream = response.OutputStream)
+                    using (var outputStream = response.OutputStream)
                     {
                         var collected = Registry.CollectAll();
                         ScrapeHandler.ProcessScrapeRequest(collected, contentType, outputStream);
@@ -101,16 +107,6 @@ namespace Prometheus.Client.MetricServer
                     Trace.WriteLine($"Error in MetricsServer: {ex}");
                 }
             }
-
-        }
-
-        /// <inheritdoc />
-        public void Stop()
-        {
-            _isListening = false;
-            _httpListener.Stop();
-            _httpListener.Close();
-
         }
     }
 }
