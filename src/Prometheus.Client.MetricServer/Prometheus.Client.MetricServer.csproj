@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Prometheus.Client" Version="[1.1.0,1.4.0)" />
+    <PackageReference Include="Prometheus.Client" Version="1.4.0" />
   </ItemGroup>
 
 
