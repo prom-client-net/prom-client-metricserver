@@ -20,13 +20,15 @@ namespace Prometheus.Client.MetricServer
     {
         private readonly X509Certificate2 _certificate;
         private readonly string _hostAddress;
+        private readonly int _port;
         private IWebHost _host;
+       
 
         /// <summary>
         ///     Constructor
         /// </summary>
         public MetricServer(int port, bool useHttps = false)
-            : this("+", port, Consts.DefaultUrl, null, null, null, useHttps)
+            : this(Consts.DefaultHost, port, Consts.DefaultUrl, null, null, null, useHttps)
         {
         }
 
@@ -57,10 +59,10 @@ namespace Prometheus.Client.MetricServer
                 throw new ArgumentNullException(nameof(certificate), $"{nameof(certificate)} is required when using https");
 
             _certificate = certificate;
+            _port = port;
             var s = useHttps ? "s" : "";
-            _hostAddress = $"http{s}://{hostname}:{port}/{url}";
+            _hostAddress = $"http{s}://{hostname}:{_port}/{url}";
         }
-
 
         /// <summary>
         ///     Server is Running?
@@ -70,8 +72,9 @@ namespace Prometheus.Client.MetricServer
         /// <inheritdoc />
         public void Start()
         {
-            if (_host != null)
-                throw new Exception("Server is already running.");
+            if (IsRunning)
+                return;
+            
             var configBuilder = new ConfigurationBuilder();
             configBuilder.Properties["parent"] = this;
             var config = configBuilder.Build();
@@ -85,8 +88,9 @@ namespace Prometheus.Client.MetricServer
 #if NETSTANDARD13
                         options.UseHttps(_certificate);
 #endif
+                        
 #if NETSTANDARD20
-                        options.Listen(IPAddress.Any, 443, listenOptions => listenOptions.UseHttps(_certificate));
+                        options.Listen(IPAddress.Any, _port, listenOptions => listenOptions.UseHttps(_certificate));
 #endif
                     }
                 })
@@ -100,9 +104,9 @@ namespace Prometheus.Client.MetricServer
         /// <inheritdoc />
         public void Stop()
         {
-            if (_host == null)
+            if (!IsRunning) 
                 return;
-
+            
             _host.Dispose();
             _host = null;
         }
@@ -143,7 +147,6 @@ namespace Prometheus.Client.MetricServer
                         ScrapeHandler.ProcessScrapeRequest(collected, contentType, outputStream);
                     }
 
-                    ;
                     return Task.FromResult(true);
                 });
             }

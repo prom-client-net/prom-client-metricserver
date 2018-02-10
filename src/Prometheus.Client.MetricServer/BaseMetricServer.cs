@@ -16,8 +16,7 @@ namespace Prometheus.Client.MetricServer
         /// <summary>
         ///     Constructor
         /// </summary>
-        protected BaseMetricServer(IEnumerable<IOnDemandCollector> standardCollectors = null,
-            ICollectorRegistry registry = null)
+        protected BaseMetricServer(IEnumerable<IOnDemandCollector> standardCollectors = null, ICollectorRegistry registry = null)
         {
             Registry = registry ?? CollectorRegistry.Instance;
             if (Registry != CollectorRegistry.Instance)

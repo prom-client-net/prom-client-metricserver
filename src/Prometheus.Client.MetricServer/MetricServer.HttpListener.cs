@@ -22,7 +22,7 @@ namespace Prometheus.Client.MetricServer
         ///     Constructor
         /// </summary>
         public MetricServer(int port, bool useHttps = false)
-            : this("+", port, Consts.DefaultUrl, null, null, useHttps)
+            : this(Consts.DefaultHost, port, Consts.DefaultUrl, null, null, useHttps)
         {
         }
 
@@ -58,7 +58,7 @@ namespace Prometheus.Client.MetricServer
             _bgThread = new Thread(StartListen)
             {
                 IsBackground = true,
-                Name = "MetricsServer"
+                Name = "MetricServer"
             };
             _bgThread.Start();
         }
@@ -104,7 +104,7 @@ namespace Prometheus.Client.MetricServer
 
                 catch (HttpListenerException ex)
                 {
-                    Trace.WriteLine($"Error in MetricsServer: {ex}");
+                    Trace.WriteLine($"Error in MetricServer: {ex}");
                 }
             }
         }
