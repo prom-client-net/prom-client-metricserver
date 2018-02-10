@@ -3,6 +3,6 @@
     internal static class Consts
     {
         public const string DefaultHost = "*";
-        public const string DefaultUrl = "metrics/";
+        public const string DefaultUrl = "/metrics";
     }
 }

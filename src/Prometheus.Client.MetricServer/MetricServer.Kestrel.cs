@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -19,10 +20,12 @@ namespace Prometheus.Client.MetricServer
     public class MetricServer : BaseMetricServer, IMetricServer
     {
         private readonly X509Certificate2 _certificate;
-        private readonly string _hostAddress;
+        private readonly string _hostName;
         private readonly int _port;
+        private readonly string _url;
+        private readonly bool _useHttps;
         private IWebHost _host;
-       
+
 
         /// <summary>
         ///     Constructor
@@ -51,17 +54,18 @@ namespace Prometheus.Client.MetricServer
         /// <summary>
         ///     Constructor
         /// </summary>
-        public MetricServer(string hostname, int port, string url, IEnumerable<IOnDemandCollector> standardCollectors = null, ICollectorRegistry registry = null,
+        public MetricServer(string host, int port, string url, IEnumerable<IOnDemandCollector> standardCollectors = null, ICollectorRegistry registry = null,
             X509Certificate2 certificate = null, bool useHttps = false)
             : base(standardCollectors, registry)
         {
             if (useHttps && certificate == null)
                 throw new ArgumentNullException(nameof(certificate), $"{nameof(certificate)} is required when using https");
 
+            _useHttps = useHttps;
             _certificate = certificate;
             _port = port;
-            var s = useHttps ? "s" : "";
-            _hostAddress = $"http{s}://{hostname}:{_port}/{url}";
+            _hostName = host;
+            _url = url;
         }
 
         /// <summary>
@@ -74,28 +78,29 @@ namespace Prometheus.Client.MetricServer
         {
             if (IsRunning)
                 return;
-            
+
             var configBuilder = new ConfigurationBuilder();
             configBuilder.Properties["parent"] = this;
             var config = configBuilder.Build();
+
 
             _host = new WebHostBuilder()
                 .UseConfiguration(config)
                 .UseKestrel(options =>
                 {
-                    if (_certificate != null)
-                    {
 #if NETSTANDARD13
+                    if (_useHttps)
                         options.UseHttps(_certificate);
 #endif
-                        
+                    
 #if NETSTANDARD20
-                        options.Listen(IPAddress.Any, _port, listenOptions => listenOptions.UseHttps(_certificate));
+                    if (_useHttps)
+                        options.Listen(IPAddress.Any, _port, listenOptions => { listenOptions.UseHttps(_certificate); });
 #endif
-                    }
                 })
-                .UseUrls(_hostAddress)
-                .ConfigureServices(services => { services.AddSingleton<IStartup>(new Startup(Registry)); })
+                .UseUrls($"http{(_useHttps ? "s" : "")}://{_hostName}:{_port}")
+                .ConfigureServices(services => { services.AddSingleton<IStartup>(new Startup(Registry, _url)); })
+                .UseSetting(WebHostDefaults.ApplicationKey, typeof(Startup).GetTypeInfo().Assembly.FullName)
                 .Build();
 
             _host.Start();
@@ -104,9 +109,9 @@ namespace Prometheus.Client.MetricServer
         /// <inheritdoc />
         public void Stop()
         {
-            if (!IsRunning) 
+            if (!IsRunning)
                 return;
-            
+
             _host.Dispose();
             _host = null;
         }
@@ -114,10 +119,13 @@ namespace Prometheus.Client.MetricServer
         internal class Startup : IStartup
         {
             private readonly ICollectorRegistry _registry;
+            private readonly string _baseUrl;
 
-            public Startup(ICollectorRegistry registry)
+            public Startup(ICollectorRegistry registry, string baseUrl)
             {
                 _registry = registry;
+                _baseUrl = baseUrl;
+
                 var builder = new ConfigurationBuilder();
                 Configuration = builder.Build();
             }
@@ -131,6 +139,8 @@ namespace Prometheus.Client.MetricServer
 
             public void Configure(IApplicationBuilder app)
             {
+                app.UsePathBase(_baseUrl);
+                
                 app.Run(context =>
                 {
                     var response = context.Response;
