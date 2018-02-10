@@ -7,12 +7,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8E29CEE6-355
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prometheus.Client.MetricServer", "src\Prometheus.Client.MetricServer\Prometheus.Client.MetricServer.csproj", "{C77F577A-8639-4A63-966D-80C174B3D999}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{37C0D023-77CB-4164-9BF4-07D6AF18CA55}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApiApplication", "examples\WebApiApplication\WebApiApplication.csproj", "{22C001AB-416F-4BA0-9F93-870ED8EFE294}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreConsole", "Examples\CoreConsole\CoreConsole.csproj", "{697F4F23-C0B6-4A22-A55F-B94E99BF5999}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,21 +17,11 @@ Global
 		{C77F577A-8639-4A63-966D-80C174B3D999}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C77F577A-8639-4A63-966D-80C174B3D999}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C77F577A-8639-4A63-966D-80C174B3D999}.Release|Any CPU.Build.0 = Release|Any CPU
-		{22C001AB-416F-4BA0-9F93-870ED8EFE294}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{22C001AB-416F-4BA0-9F93-870ED8EFE294}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{22C001AB-416F-4BA0-9F93-870ED8EFE294}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{22C001AB-416F-4BA0-9F93-870ED8EFE294}.Release|Any CPU.Build.0 = Release|Any CPU
-		{697F4F23-C0B6-4A22-A55F-B94E99BF5999}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{697F4F23-C0B6-4A22-A55F-B94E99BF5999}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{697F4F23-C0B6-4A22-A55F-B94E99BF5999}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{697F4F23-C0B6-4A22-A55F-B94E99BF5999}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C77F577A-8639-4A63-966D-80C174B3D999} = {8E29CEE6-355D-427A-8EDA-F2A1FE60BC3B}
-		{22C001AB-416F-4BA0-9F93-870ED8EFE294} = {37C0D023-77CB-4164-9BF4-07D6AF18CA55}
-		{697F4F23-C0B6-4A22-A55F-B94E99BF5999} = {37C0D023-77CB-4164-9BF4-07D6AF18CA55}
 	EndGlobalSection
 EndGlobal

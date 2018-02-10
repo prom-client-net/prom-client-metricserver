@@ -1,7 +1,8 @@
-﻿#if COREFX
+﻿#if NETSTANDARD13 || NETSTANDARD20
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -12,7 +13,6 @@ using Prometheus.Client.Collectors;
 
 namespace Prometheus.Client.MetricServer
 {
-
     /// <summary>
     ///     MetricSever based of Kestrel
     /// </summary>
@@ -49,7 +49,8 @@ namespace Prometheus.Client.MetricServer
         /// <summary>
         ///     Constructor
         /// </summary>
-        public MetricServer(string hostname, int port, string url, IEnumerable<IOnDemandCollector> standardCollectors = null, ICollectorRegistry registry = null, X509Certificate2 certificate = null, bool useHttps = false)
+        public MetricServer(string hostname, int port, string url, IEnumerable<IOnDemandCollector> standardCollectors = null, ICollectorRegistry registry = null,
+            X509Certificate2 certificate = null, bool useHttps = false)
             : base(standardCollectors, registry)
         {
             if (useHttps && certificate == null)
@@ -80,7 +81,14 @@ namespace Prometheus.Client.MetricServer
                 .UseKestrel(options =>
                 {
                     if (_certificate != null)
+                    {
+#if NETSTANDARD13
                         options.UseHttps(_certificate);
+#endif
+#if NETSTANDARD20
+                        options.Listen(IPAddress.Any, 443, listenOptions => listenOptions.UseHttps(_certificate));
+#endif
+                    }
                 })
                 .UseUrls(_hostAddress)
                 .ConfigureServices(services => { services.AddSingleton<IStartup>(new Startup(Registry)); })
@@ -134,6 +142,7 @@ namespace Prometheus.Client.MetricServer
                         var collected = _registry.CollectAll();
                         ScrapeHandler.ProcessScrapeRequest(collected, contentType, outputStream);
                     }
+
                     ;
                     return Task.FromResult(true);
                 });

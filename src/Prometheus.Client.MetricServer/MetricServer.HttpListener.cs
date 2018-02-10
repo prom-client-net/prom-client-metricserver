@@ -1,4 +1,4 @@
-﻿#if !COREFX
+﻿#if !NETSTANDARD20 && !NETSTANDARD13
 
 using System.Collections.Generic;
 using System.Diagnostics;
