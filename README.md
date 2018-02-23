@@ -32,4 +32,6 @@ static void Main(string[] args)
 }
 ```
 
+[Examples](https://github.com/phnx47/Prometheus.Client.Examples)
+
 
