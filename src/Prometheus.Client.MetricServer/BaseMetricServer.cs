@@ -14,18 +14,52 @@ namespace Prometheus.Client.MetricServer
         protected readonly ICollectorRegistry Registry;
 
         /// <summary>
+        ///     Standard collectors
+        /// </summary>
+        private readonly IEnumerable<IOnDemandCollector> _standardCollectors = new[] { new DotNetStatsCollector() };
+
+        
+        /// <summary>
         ///     Constructor
         /// </summary>
-        protected BaseMetricServer(IEnumerable<IOnDemandCollector> standardCollectors = null, ICollectorRegistry registry = null)
+        protected BaseMetricServer()
+            :this(null, null)
+        {
+           
+        }
+        
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        protected BaseMetricServer(IEnumerable<IOnDemandCollector> standardCollectors)
+            :this(standardCollectors, null)
+        {
+           
+        }
+        
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        protected BaseMetricServer(ICollectorRegistry registry)
+            :this(null, registry)
+        {
+           
+        }
+        
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        protected BaseMetricServer(IEnumerable<IOnDemandCollector> standardCollectors, ICollectorRegistry registry)
         {
             Registry = registry ?? CollectorRegistry.Instance;
+            
             if (Registry != CollectorRegistry.Instance)
                 return;
 
-            if (standardCollectors == null)
-                standardCollectors = new[] { new DotNetStatsCollector() };
+            if (standardCollectors != null)
+                _standardCollectors = standardCollectors;
 
-            CollectorRegistry.Instance.RegisterOnDemandCollectors(standardCollectors);
+            CollectorRegistry.Instance.RegisterOnDemandCollectors(_standardCollectors);
         }
     }
 }
