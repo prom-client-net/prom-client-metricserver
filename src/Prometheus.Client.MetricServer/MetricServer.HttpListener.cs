@@ -68,6 +68,9 @@ namespace Prometheus.Client.MetricServer
         /// <inheritdoc />
         public void Start()
         {
+            if (IsRunning)
+                return;
+            
             var bgThread = new Thread(StartListen)
             {
                 IsBackground = true,
