@@ -30,32 +30,49 @@ namespace Prometheus.Client.MetricServer
         /// <summary>
         ///     Constructor
         /// </summary>
-        public MetricServer(int port, bool useHttps = false)
-            : this(Consts.DefaultHost, port, Consts.DefaultUrl, null, null, null, useHttps)
+        public MetricServer(int port)
+            : this(Consts.DefaultHost, port, Consts.DefaultUrl, null, null, null, false)
         {
         }
 
         /// <summary>
         ///     Constructor
         /// </summary>
-        public MetricServer(string host, int port, bool useHttps = false)
-            : this(host, port, Consts.DefaultUrl, null, null, null, useHttps)
+        public MetricServer(string host, int port)
+            : this(host, port, Consts.DefaultUrl, null, null, null, false)
         {
         }
 
         /// <summary>
         ///     Constructor
         /// </summary>
-        public MetricServer(string host, int port, string url, bool useHttps = false)
-            : this(host, port, url, null, null, null, useHttps)
+        public MetricServer(int port, X509Certificate2 certificate, bool useHttps)
+            : this(Consts.DefaultHost, port, Consts.DefaultUrl, null, null, certificate, useHttps)
         {
         }
 
         /// <summary>
         ///     Constructor
         /// </summary>
-        public MetricServer(string host, int port, string url, IEnumerable<IOnDemandCollector> standardCollectors = null, ICollectorRegistry registry = null,
-            X509Certificate2 certificate = null, bool useHttps = false)
+        public MetricServer(string host, int port, X509Certificate2 certificate, bool useHttps)
+            : this(host, port, Consts.DefaultUrl, null, null, certificate, useHttps)
+        {
+        }
+
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        public MetricServer(string host, int port, string url, IEnumerable<IOnDemandCollector> standardCollectors, ICollectorRegistry registry)
+            : this(host, port, url, standardCollectors, registry, null, false)
+        {
+        }
+
+
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        public MetricServer(string host, int port, string url, IEnumerable<IOnDemandCollector> standardCollectors, ICollectorRegistry registry, X509Certificate2 certificate,
+            bool useHttps)
             : base(standardCollectors, registry)
         {
             if (useHttps && certificate == null)
