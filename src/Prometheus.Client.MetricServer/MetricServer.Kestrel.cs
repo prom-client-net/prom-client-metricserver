@@ -92,7 +92,7 @@ namespace Prometheus.Client.MetricServer
                     if (_useHttps)
                         options.UseHttps(_certificate);
 #endif
-                    
+
 #if NETSTANDARD20
                     if (_useHttps)
                         options.Listen(IPAddress.Any, _port, listenOptions => { listenOptions.UseHttps(_certificate); });
@@ -119,12 +119,12 @@ namespace Prometheus.Client.MetricServer
         internal class Startup : IStartup
         {
             private readonly ICollectorRegistry _registry;
-            private readonly string _baseUrl;
+            private readonly string _url;
 
-            public Startup(ICollectorRegistry registry, string baseUrl)
+            public Startup(ICollectorRegistry registry, string url)
             {
                 _registry = registry;
-                _baseUrl = baseUrl;
+                _url = url;
 
                 var builder = new ConfigurationBuilder();
                 Configuration = builder.Build();
@@ -139,24 +139,28 @@ namespace Prometheus.Client.MetricServer
 
             public void Configure(IApplicationBuilder app)
             {
-                app.UsePathBase(_baseUrl);
-                
                 app.Run(context =>
                 {
-                    var response = context.Response;
-                    var request = context.Request;
-                    response.StatusCode = 200;
-
-                    var acceptHeader = request.Headers["Accept"];
-                    var contentType = ScrapeHandler.GetContentType(acceptHeader);
-                    response.ContentType = contentType;
-
-                    using (var outputStream = response.Body)
+                    if (context.Request.Path == _url)
                     {
-                        var collected = _registry.CollectAll();
-                        ScrapeHandler.ProcessScrapeRequest(collected, contentType, outputStream);
+                        var response = context.Response;
+                        var request = context.Request;
+                        response.StatusCode = 200;
+
+                        var acceptHeader = request.Headers["Accept"];
+                        var contentType = ScrapeHandler.GetContentType(acceptHeader);
+                        response.ContentType = contentType;
+
+                        using (var outputStream = response.Body)
+                        {
+                            var collected = _registry.CollectAll();
+                            ScrapeHandler.ProcessScrapeRequest(collected, contentType, outputStream);
+                        }
+
+                        return Task.FromResult(true);
                     }
 
+                    context.Response.StatusCode = 404;
                     return Task.FromResult(true);
                 });
             }
