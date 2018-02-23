@@ -75,7 +75,7 @@ namespace Prometheus.Client.MetricServer
             _certificate = certificate;
             _port = port;
             _hostName = host;
-            _url = url;
+            _url = "/" + url;
         }
 
         /// <inheritdoc />
