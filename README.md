@@ -16,6 +16,8 @@ Extension for [Prometheus.Client](https://github.com/phnx47/Prometheus.Client)
 
 #### Use:
 
+There are [Examples](https://github.com/phnx47/Prometheus.Client.Examples)
+
 ```csharp
 
 static void Main(string[] args)
@@ -32,6 +34,6 @@ static void Main(string[] args)
 }
 ```
 
-[Examples](https://github.com/phnx47/Prometheus.Client.Examples)
+
 
 
