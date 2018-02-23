@@ -62,7 +62,7 @@ namespace Prometheus.Client.MetricServer
         public MetricServer(string hostname, int port, string url, IEnumerable<IOnDemandCollector> standardCollectors, ICollectorRegistry registry, bool useHttps)
             : base(standardCollectors, registry)
         {
-            _httpListener.Prefixes.Add($"http{(useHttps ? "s" : "")}://{hostname}:{port}/{url}");
+            _httpListener.Prefixes.Add($"http{(useHttps ? "s" : "")}://{hostname}:{port}/{url}/");
         }
 
         /// <inheritdoc />
