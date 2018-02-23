@@ -15,13 +15,19 @@ namespace Prometheus.Client.MetricServer
     public class MetricServer : BaseMetricServer, IMetricServer
     {
         private readonly HttpListener _httpListener = new HttpListener();
-        private Thread _bgThread;
-        private bool _isListening;
 
         /// <summary>
         ///     Constructor
         /// </summary>
-        public MetricServer(int port, bool useHttps = false)
+        public MetricServer(int port)
+            : this(port, false)
+        {
+        }
+
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        public MetricServer(int port, bool useHttps)
             : this(Consts.DefaultHost, port, Consts.DefaultUrl, null, null, useHttps)
         {
         }
@@ -29,7 +35,15 @@ namespace Prometheus.Client.MetricServer
         /// <summary>
         ///     Constructor
         /// </summary>
-        public MetricServer(string host, int port, bool useHttps = false)
+        public MetricServer(string host, int port)
+            : this(host, port, false)
+        {
+        }
+
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        public MetricServer(string host, int port, bool useHttps)
             : this(host, port, Consts.DefaultUrl, null, null, useHttps)
         {
         }
@@ -37,7 +51,7 @@ namespace Prometheus.Client.MetricServer
         /// <summary>
         ///     Constructor
         /// </summary>
-        public MetricServer(string host, int port, string url, bool useHttps = false)
+        public MetricServer(string host, int port, string url, bool useHttps)
             : this(host, port, url, null, null, useHttps)
         {
         }
@@ -45,28 +59,30 @@ namespace Prometheus.Client.MetricServer
         /// <summary>
         ///     Constructor
         /// </summary>
-        public MetricServer(string hostname, int port, string url, IEnumerable<IOnDemandCollector> standardCollectors = null, ICollectorRegistry registry = null, bool useHttps = false)
+        public MetricServer(string hostname, int port, string url, IEnumerable<IOnDemandCollector> standardCollectors, ICollectorRegistry registry, bool useHttps)
             : base(standardCollectors, registry)
         {
-            var s = useHttps ? "s" : "";
-            _httpListener.Prefixes.Add($"http{s}://{hostname}:{port}/{url}");
+            _httpListener.Prefixes.Add($"http{(useHttps ? "s" : "")}://{hostname}:{port}/{url}");
         }
 
         /// <inheritdoc />
         public void Start()
         {
-            _bgThread = new Thread(StartListen)
+            var bgThread = new Thread(StartListen)
             {
                 IsBackground = true,
                 Name = "MetricServer"
             };
-            _bgThread.Start();
+            bgThread.Start();
         }
+
+        /// <inheritdoc />
+        public bool IsRunning { get; private set; }
 
         /// <inheritdoc />
         public void Stop()
         {
-            _isListening = false;
+            IsRunning = false;
             _httpListener.Stop();
             _httpListener.Close();
         }
@@ -74,9 +90,9 @@ namespace Prometheus.Client.MetricServer
         private void StartListen()
         {
             _httpListener.Start();
-            _isListening = true;
+            IsRunning = true;
 
-            while (_isListening)
+            while (IsRunning)
             {
                 try
                 {

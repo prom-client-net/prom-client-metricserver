@@ -14,5 +14,10 @@
         ///     Stop server
         /// </summary>
         void Stop();
+        
+        /// <summary>
+        ///     Server is Running?
+        /// </summary>
+        bool IsRunning { get; }
     }
 }

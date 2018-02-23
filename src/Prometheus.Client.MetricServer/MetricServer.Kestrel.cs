@@ -23,15 +23,13 @@ namespace Prometheus.Client.MetricServer
         private readonly string _hostName;
         private readonly int _port;
         private readonly string _url;
-        private readonly bool _useHttps;
         private IWebHost _host;
-
-
+        
         /// <summary>
         ///     Constructor
         /// </summary>
         public MetricServer(int port)
-            : this(Consts.DefaultHost, port, Consts.DefaultUrl, null, null, null, false)
+            : this(Consts.DefaultHost, port, Consts.DefaultUrl, null, null, null)
         {
         }
 
@@ -39,23 +37,23 @@ namespace Prometheus.Client.MetricServer
         ///     Constructor
         /// </summary>
         public MetricServer(string host, int port)
-            : this(host, port, Consts.DefaultUrl, null, null, null, false)
+            : this(host, port, Consts.DefaultUrl, null, null, null)
         {
         }
 
         /// <summary>
         ///     Constructor
         /// </summary>
-        public MetricServer(int port, X509Certificate2 certificate, bool useHttps)
-            : this(Consts.DefaultHost, port, Consts.DefaultUrl, null, null, certificate, useHttps)
+        public MetricServer(int port, X509Certificate2 certificate)
+            : this(Consts.DefaultHost, port, Consts.DefaultUrl, null, null, certificate)
         {
         }
 
         /// <summary>
         ///     Constructor
         /// </summary>
-        public MetricServer(string host, int port, X509Certificate2 certificate, bool useHttps)
-            : this(host, port, Consts.DefaultUrl, null, null, certificate, useHttps)
+        public MetricServer(string host, int port, X509Certificate2 certificate)
+            : this(host, port, Consts.DefaultUrl, null, null, certificate)
         {
         }
 
@@ -63,7 +61,7 @@ namespace Prometheus.Client.MetricServer
         ///     Constructor
         /// </summary>
         public MetricServer(string host, int port, string url, IEnumerable<IOnDemandCollector> standardCollectors, ICollectorRegistry registry)
-            : this(host, port, url, standardCollectors, registry, null, false)
+            : this(host, port, url, standardCollectors, registry, null)
         {
         }
 
@@ -71,23 +69,16 @@ namespace Prometheus.Client.MetricServer
         /// <summary>
         ///     Constructor
         /// </summary>
-        public MetricServer(string host, int port, string url, IEnumerable<IOnDemandCollector> standardCollectors, ICollectorRegistry registry, X509Certificate2 certificate,
-            bool useHttps)
+        public MetricServer(string host, int port, string url, IEnumerable<IOnDemandCollector> standardCollectors, ICollectorRegistry registry, X509Certificate2 certificate)
             : base(standardCollectors, registry)
         {
-            if (useHttps && certificate == null)
-                throw new ArgumentNullException(nameof(certificate), $"{nameof(certificate)} is required when using https");
-
-            _useHttps = useHttps;
             _certificate = certificate;
             _port = port;
             _hostName = host;
             _url = url;
         }
 
-        /// <summary>
-        ///     Server is Running?
-        /// </summary>
+        /// <inheritdoc />
         public bool IsRunning => _host != null;
 
         /// <inheritdoc />
@@ -106,16 +97,16 @@ namespace Prometheus.Client.MetricServer
                 .UseKestrel(options =>
                 {
 #if NETSTANDARD13
-                    if (_useHttps)
+                    if (_certificate != null)
                         options.UseHttps(_certificate);
 #endif
 
 #if NETSTANDARD20
-                    if (_useHttps)
+                    if (_certificate != null)
                         options.Listen(IPAddress.Any, _port, listenOptions => { listenOptions.UseHttps(_certificate); });
 #endif
                 })
-                .UseUrls($"http{(_useHttps ? "s" : "")}://{_hostName}:{_port}")
+                .UseUrls($"http{(_certificate != null ? "s" : "")}://{_hostName}:{_port}")
                 .ConfigureServices(services => { services.AddSingleton<IStartup>(new Startup(Registry, _url)); })
                 .UseSetting(WebHostDefaults.ApplicationKey, typeof(Startup).GetTypeInfo().Assembly.FullName)
                 .Build();
