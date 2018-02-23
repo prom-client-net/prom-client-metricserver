@@ -16,7 +16,7 @@ Extension for [Prometheus.Client](https://github.com/phnx47/Prometheus.Client)
 
 #### Use:
 
-There are [Examples](https://github.com/phnx47/Prometheus.Client.Examples)
+There are [Examples](https://github.com/phnx47/Prometheus.Client.Examples/tree/master/MetricServer)
 
 ```csharp
 
