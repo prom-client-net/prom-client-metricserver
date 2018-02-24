@@ -1,10 +1,23 @@
 version: '{build}-{branch}'
 image: Visual Studio 2017
+
+skip_commits:
+  files:
+    - '**/*.md'
+
 build_script:
-- cmd: dotnet restore src\Prometheus.Client.MetricServer && dotnet pack src\Prometheus.Client.MetricServer -c Release --include-symbols
+- ps: .\build.ps1
+
+test_script:
+- ps: .\test.ps1
+
+after_test:
+- ps: .\pack.ps1
+
 artifacts:
 - path: '**\*.nupkg'
   name: All Nupkg
+  
 deploy:
 - provider: NuGet
   api_key:

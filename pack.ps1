@@ -1,0 +1,1 @@
+dotnet pack $env:APPVEYOR_BUILD_FOLDER\src\Prometheus.Client.MetricServer -c Release --include-symbols --no-build
