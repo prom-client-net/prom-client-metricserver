@@ -1,6 +1,5 @@
 ﻿*.nupkg
 *.user
-*.suo
 *.exe
 
 .vs
