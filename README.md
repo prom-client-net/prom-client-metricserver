@@ -12,7 +12,7 @@ Extension for [Prometheus.Client](https://github.com/phnx47/Prometheus.Client)
 
 #### Install:
 
-    PM> Install-Package Prometheus.Client.MetricServer
+    dotnet add package Prometheus.Client.MetricServer
 
 #### Use:
 

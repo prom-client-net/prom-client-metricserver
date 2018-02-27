@@ -1,5 +1,4 @@
-﻿*.nupkg
-*.user
+﻿*.user
 *.exe
 
 .vs
