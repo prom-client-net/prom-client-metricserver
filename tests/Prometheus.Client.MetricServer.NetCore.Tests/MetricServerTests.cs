@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Xunit;
 
 namespace Prometheus.Client.MetricServer.NetCore.Tests
