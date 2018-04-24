@@ -7,14 +7,11 @@
 
 Extension for [Prometheus.Client](https://github.com/phnx47/Prometheus.Client)
 
-## Quik start
-
-
-#### Install:
+#### Installation:
 
     dotnet add package Prometheus.Client.MetricServer
 
-#### Use:
+#### Quik start:
 
 There are [Examples](https://github.com/phnx47/Prometheus.Client.Examples/tree/master/MetricServer)
 
