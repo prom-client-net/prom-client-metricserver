@@ -10,10 +10,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Prometheus.Client.Collectors;
+using Prometheus.Client.Collectors.Abstractions;
 
 namespace Prometheus.Client.MetricServer
 {
+    /// <inheritdoc cref="IMetricServer" />
     /// <summary>
     ///     MetricSever based of Kestrel
     /// </summary>
@@ -22,60 +23,107 @@ namespace Prometheus.Client.MetricServer
         private readonly X509Certificate2 _certificate;
         private readonly string _hostName;
         private readonly int _port;
-        private readonly string _url;
+        private readonly string _mapPath;
         private IWebHost _host;
-        
-        /// <summary>
-        ///     Constructor
-        /// </summary>
+
+        /// <inheritdoc />
         public MetricServer(int port)
-            : this(Consts.DefaultHost, port, Consts.DefaultUrl, null, null, null)
+            : this(port, Defaults.UseDefaultCollectors)
         {
         }
 
-        /// <summary>
-        ///     Constructor
-        /// </summary>
+        /// <inheritdoc />
+        public MetricServer(int port, bool useDefaultCollectors)
+            : this(Defaults.Host, port, useDefaultCollectors)
+        {
+        }
+
+
+        /// <inheritdoc />
         public MetricServer(string host, int port)
-            : this(host, port, Consts.DefaultUrl, null, null, null)
+            : this(host, port, Defaults.UseDefaultCollectors)
         {
         }
 
-        /// <summary>
-        ///     Constructor
-        /// </summary>
+        /// <inheritdoc />
+        public MetricServer(string host, int port, bool useDefaultCollectors)
+            : this(host, port, null, useDefaultCollectors)
+        {
+        }
+
+        /// <inheritdoc />
         public MetricServer(int port, X509Certificate2 certificate)
-            : this(Consts.DefaultHost, port, Consts.DefaultUrl, null, null, certificate)
+            : this(port, certificate, Defaults.UseDefaultCollectors)
         {
         }
 
-        /// <summary>
-        ///     Constructor
-        /// </summary>
+        /// <inheritdoc />
+        public MetricServer(int port, X509Certificate2 certificate, bool useDefaultCollectors)
+            : this(Defaults.Host, port, certificate, useDefaultCollectors)
+        {
+        }
+
+        /// <inheritdoc />
         public MetricServer(string host, int port, X509Certificate2 certificate)
-            : this(host, port, Consts.DefaultUrl, null, null, certificate)
+            : this(host, port, certificate, Defaults.UseDefaultCollectors)
         {
         }
 
-        /// <summary>
-        ///     Constructor
-        /// </summary>
-        public MetricServer(string host, int port, string url, IEnumerable<IOnDemandCollector> standardCollectors, ICollectorRegistry registry)
-            : this(host, port, url, standardCollectors, registry, null)
+        /// <inheritdoc />
+        public MetricServer(string host, int port, X509Certificate2 certificate, bool useDefaultCollectors)
+            : this(host, port, Defaults.MapPath, null, new List<IOnDemandCollector>() , certificate, useDefaultCollectors)
+        {
+        }
+
+        /// <inheritdoc />
+        public MetricServer(string host, int port, string url, ICollectorRegistry registry)
+            : this(host, port, url, registry, Defaults.UseDefaultCollectors)
+        {
+        }
+        
+        /// <inheritdoc />
+        public MetricServer(string host, int port, string url, ICollectorRegistry registry, bool useDefaultCollectors)
+            : this(host, port, url, registry, new List<IOnDemandCollector>(), useDefaultCollectors)
+        {
+        }
+        /// <inheritdoc />
+        public MetricServer(string host, int port, string url, ICollectorRegistry registry, List<IOnDemandCollector> collectors)
+            : this(host, port, url, registry, collectors, Defaults.UseDefaultCollectors)
+        {
+        }
+
+        /// <inheritdoc />
+        public MetricServer(string host, int port, string url, ICollectorRegistry registry, List<IOnDemandCollector> collectors, bool useDefaultCollectors)
+            : this(host, port, url, registry, collectors, null, useDefaultCollectors)
+        {
+        }
+
+        /// <inheritdoc />
+        public MetricServer(string host, int port, string url, ICollectorRegistry registry, List<IOnDemandCollector> collectors, X509Certificate2 certificate)
+            : this(host, port, url, registry, collectors, certificate, Defaults.UseDefaultCollectors)
         {
         }
 
 
+        /// <inheritdoc />
         /// <summary>
         ///     Constructor
         /// </summary>
-        public MetricServer(string host, int port, string url, IEnumerable<IOnDemandCollector> standardCollectors, ICollectorRegistry registry, X509Certificate2 certificate)
-            : base(standardCollectors, registry)
+        /// <param name="host">Host</param>
+        /// <param name="port">Port</param>
+        /// <param name="mapPath">Map Path: Should strar with '/'</param>
+        /// <param name="registry">Collector registry</param>
+        /// <param name="collectors">IOnDemandCollectors</param>
+        /// <param name="certificate"></param>
+        /// <param name="useDefaultCollectors">Use default collectors</param>
+        public MetricServer(string host, int port, string mapPath, ICollectorRegistry registry, List<IOnDemandCollector> collectors, X509Certificate2 certificate,
+            bool useDefaultCollectors)
+            : base(registry, collectors, useDefaultCollectors)
         {
             _certificate = certificate;
             _port = port;
             _hostName = host;
-            _url = "/" + url;
+            _mapPath = mapPath;
         }
 
         /// <inheritdoc />
@@ -107,7 +155,7 @@ namespace Prometheus.Client.MetricServer
 #endif
                 })
                 .UseUrls($"http{(_certificate != null ? "s" : "")}://{_hostName}:{_port}")
-                .ConfigureServices(services => { services.AddSingleton<IStartup>(new Startup(Registry, _url)); })
+                .ConfigureServices(services => { services.AddSingleton<IStartup>(new Startup(Registry, _mapPath)); })
                 .UseSetting(WebHostDefaults.ApplicationKey, typeof(Startup).GetTypeInfo().Assembly.FullName)
                 .Build();
 
@@ -127,12 +175,12 @@ namespace Prometheus.Client.MetricServer
         internal class Startup : IStartup
         {
             private readonly ICollectorRegistry _registry;
-            private readonly string _url;
+            private readonly string _mapPath;
 
-            public Startup(ICollectorRegistry registry, string url)
+            public Startup(ICollectorRegistry registry, string mapPath)
             {
                 _registry = registry;
-                _url = url;
+                _mapPath = mapPath;
 
                 var builder = new ConfigurationBuilder();
                 Configuration = builder.Build();
@@ -149,20 +197,14 @@ namespace Prometheus.Client.MetricServer
             {
                 app.Run(context =>
                 {
-                    if (context.Request.Path == _url)
+                    if (context.Request.Path == _mapPath)
                     {
                         var response = context.Response;
-                        var request = context.Request;
-                        response.StatusCode = 200;
-
-                        var acceptHeader = request.Headers["Accept"];
-                        var contentType = ScrapeHandler.GetContentType(acceptHeader);
-                        response.ContentType = contentType;
+                        response.ContentType = "text/plain; version=0.0.4";
 
                         using (var outputStream = response.Body)
                         {
-                            var collected = _registry.CollectAll();
-                            ScrapeHandler.ProcessScrapeRequest(collected, contentType, outputStream);
+                            ScrapeHandler.Process(_registry, outputStream);
                         }
 
                         return Task.FromResult(true);

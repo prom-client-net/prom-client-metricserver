@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Prometheus.Client.Collectors;
+using Prometheus.Client.Collectors.Abstractions;
 
 namespace Prometheus.Client.MetricServer
 {
@@ -14,52 +15,24 @@ namespace Prometheus.Client.MetricServer
         protected readonly ICollectorRegistry Registry;
 
         /// <summary>
-        ///     Standard collectors
-        /// </summary>
-        private readonly IEnumerable<IOnDemandCollector> _standardCollectors = new[] { new DotNetStatsCollector() };
-
-        
-        /// <summary>
         ///     Constructor
         /// </summary>
-        protected BaseMetricServer()
-            :this(null, null)
-        {
-           
-        }
-        
-        /// <summary>
-        ///     Constructor
-        /// </summary>
-        protected BaseMetricServer(IEnumerable<IOnDemandCollector> standardCollectors)
-            :this(standardCollectors, null)
-        {
-           
-        }
-        
-        /// <summary>
-        ///     Constructor
-        /// </summary>
-        protected BaseMetricServer(ICollectorRegistry registry)
-            :this(null, registry)
-        {
-           
-        }
-        
-        /// <summary>
-        ///     Constructor
-        /// </summary>
-        protected BaseMetricServer(IEnumerable<IOnDemandCollector> standardCollectors, ICollectorRegistry registry)
+        /// <param name="registry">Collector registry</param>
+        /// <param name="collectors">IOnDemandCollectors</param>
+        /// <param name="useDefaultCollectors">Use default collectors</param>
+        protected BaseMetricServer(ICollectorRegistry registry, List<IOnDemandCollector> collectors, bool useDefaultCollectors)
         {
             Registry = registry ?? CollectorRegistry.Instance;
-            
-            if (Registry != CollectorRegistry.Instance)
-                return;
+            if (useDefaultCollectors)
+            {
+                var metricFactory = Registry == CollectorRegistry.Instance
+                    ? Metrics.DefaultFactory
+                    : new MetricFactory(Registry);
 
-            if (standardCollectors != null)
-                _standardCollectors = standardCollectors;
+                collectors.AddRange(DefaultCollectors.Get(metricFactory));
+            }
 
-            CollectorRegistry.Instance.RegisterOnDemandCollectors(_standardCollectors);
+            Registry.RegisterOnDemandCollectors(collectors);
         }
     }
 }
