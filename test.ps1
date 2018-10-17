@@ -1,1 +1,0 @@
-dotnet test tests/Prometheus.Client.MetricServer.NetCore.Tests
