@@ -1,28 +1,38 @@
 version: '{build}-{branch}'
 image: Visual Studio 2017
 
-sskip_commits:
+skip_commits:
   files:
-  - '**/*.md'
+    - '**/*.md'
 
-  build_script:
+build_script:
   - pwsh: dotnet build -c Release
 
-  test_script:
+test_script:
   - pwsh: dotnet test ./tests/Prometheus.Client.MetricServer.NetCore.Tests -c Release --no-build
 
-  after_test:
+after_test:
   - pwsh: .\pack.ps1
 
-  artifacts:
+artifacts:
   - path: '**\artifacts\nuget\*.nupkg'
     name: Nuget
   - path: '**\artifacts\myget\*.nupkg'
-  name: Myget
+    name: Myget
   
 deploy:
-- provider: NuGet
-  api_key:
-    secure: vbPWVWUYJ4zSn7fQ621uITPR99Q2s+bx36nE97IUOFrjgjAkMSJ9KOoFTXTGPAl1
-  on:
-    appveyor_repo_tag: true
+  - provider: NuGet
+    api_key:
+      secure: vbPWVWUYJ4zSn7fQ621uITPR99Q2s+bx36nE97IUOFrjgjAkMSJ9KOoFTXTGPAl1
+    on:
+      appveyor_repo_tag: true
+      
+  - provider: NuGet
+    server: https://www.myget.org/F/phnx47-beta/api/v2/package
+    api_key:
+      secure: Smuwoi47XyX6b6x66VpPnnL96F3cl1nukALrFnZo1Oony38dzouByG7pnt6DX4HT
+    symbol_server: https://www.myget.org/F/phnx47-beta/symbols/api/v2/package
+    artifact: MyGet
+    on:
+      branch: master
+      appveyor_repo_tag: false 

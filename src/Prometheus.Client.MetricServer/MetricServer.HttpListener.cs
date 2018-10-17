@@ -1,14 +1,15 @@
 ﻿#if NET45
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Net;
 using System.Threading;
-using Prometheus.Client.Collectors;
+using Prometheus.Client.Collectors.Abstractions;
 
 namespace Prometheus.Client.MetricServer
 {
+    /// <inheritdoc cref="IMetricServer" />
     /// <summary>
     ///     MetricSever based of HttpListener
     /// </summary>
@@ -16,53 +17,79 @@ namespace Prometheus.Client.MetricServer
     {
         private readonly HttpListener _httpListener = new HttpListener();
 
-        /// <summary>
-        ///     Constructor
-        /// </summary>
+
+        /// <inheritdoc />
         public MetricServer(int port)
-            : this(port, false)
+            : this(port, Defaults.UseDefaultCollectors)
         {
         }
 
-        /// <summary>
-        ///     Constructor
-        /// </summary>
-        public MetricServer(int port, bool useHttps)
-            : this(Consts.DefaultHost, port, Consts.DefaultUrl, null, null, useHttps)
+        /// <inheritdoc />
+        public MetricServer(int port, bool useDefaultCollectors)
+            : this(Defaults.Host, port, false, useDefaultCollectors)
         {
         }
 
-        /// <summary>
-        ///     Constructor
-        /// </summary>
-        public MetricServer(string host, int port)
-            : this(host, port, false)
-        {
-        }
-
-        /// <summary>
-        ///     Constructor
-        /// </summary>
+        /// <inheritdoc />
         public MetricServer(string host, int port, bool useHttps)
-            : this(host, port, Consts.DefaultUrl, null, null, useHttps)
+            : this(host, port, useHttps, Defaults.UseDefaultCollectors)
         {
         }
 
-        /// <summary>
-        ///     Constructor
-        /// </summary>
+        /// <inheritdoc />
+        public MetricServer(string host, int port, bool useHttps, bool useDefaultCollectors)
+            : this(host, port, Defaults.MapPath, useHttps, useDefaultCollectors)
+        {
+        }
+
+        /// <inheritdoc />
         public MetricServer(string host, int port, string url, bool useHttps)
-            : this(host, port, url, null, null, useHttps)
+            : this(host, port, url, useHttps, Defaults.UseDefaultCollectors)
         {
         }
 
+        /// <inheritdoc />
+        public MetricServer(string host, int port, string url, bool useHttps, bool useDefaultCollectors)
+            : this(host, port, url, null, new List<IOnDemandCollector>(), useHttps, useDefaultCollectors)
+        {
+        }
+        /// <inheritdoc />
+        public MetricServer(string host, int port, string url, ICollectorRegistry registry)
+            : this(host, port, url, registry, Defaults.UseDefaultCollectors)
+        {
+        }
+        
+        /// <inheritdoc />
+        public MetricServer(string host, int port, string url, ICollectorRegistry registry, bool useHttps)
+            : this(host, port, url, registry, useHttps, Defaults.UseDefaultCollectors)
+        {
+        }
+
+        /// <inheritdoc />
+        public MetricServer(string host, int port, string url, ICollectorRegistry registry, bool useHttps, bool useDefaultCollectors)
+            : this(host, port, url, registry, new List<IOnDemandCollector>(), useHttps, useDefaultCollectors)
+        {
+        }
+
+        /// <inheritdoc />
         /// <summary>
         ///     Constructor
         /// </summary>
-        public MetricServer(string hostname, int port, string url, IEnumerable<IOnDemandCollector> standardCollectors, ICollectorRegistry registry, bool useHttps)
-            : base(standardCollectors, registry)
+        /// <param name="host">Host</param>
+        /// <param name="port">Port</param>
+        /// <param name="mapPath">Map Path: should start with '/'</param>
+        /// <param name="registry">Collector registry</param>
+        /// <param name="collectors">IOnDemandCollectors</param>
+        /// <param name="useHttps">use Https</param>
+        /// <param name="useDefaultCollectors">Use default collectors</param>
+        public MetricServer(string host, int port, string mapPath, ICollectorRegistry registry, List<IOnDemandCollector> collectors, bool useHttps,
+            bool useDefaultCollectors)
+            : base(registry, collectors, useDefaultCollectors)
         {
-            _httpListener.Prefixes.Add($"http{(useHttps ? "s" : "")}://{hostname}:{port}/{url}/");
+            if (!mapPath.StartsWith("/"))
+                throw new ArgumentException($"mapPath '{mapPath}' should start with '/'");
+
+            _httpListener.Prefixes.Add($"http{(useHttps ? "s" : "")}://{host}:{port}{mapPath}");
         }
 
         /// <inheritdoc />
@@ -70,7 +97,7 @@ namespace Prometheus.Client.MetricServer
         {
             if (IsRunning)
                 return;
-            
+
             var bgThread = new Thread(StartListen)
             {
                 IsBackground = true,
@@ -100,24 +127,12 @@ namespace Prometheus.Client.MetricServer
                 try
                 {
                     var context = _httpListener.GetContext();
-                    var request = context.Request;
                     var response = context.Response;
-
-                    var inputStream = request.InputStream;
-                    var encoding = request.ContentEncoding;
-                    var reader = new StreamReader(inputStream, encoding);
-                    reader.ReadToEnd();
-                    response.StatusCode = 200;
-
-                    var acceptHeader = request.Headers.Get("Accept");
-                    var acceptHeaders = acceptHeader?.Split(',');
-                    var contentType = ScrapeHandler.GetContentType(acceptHeaders);
-                    response.ContentType = contentType;
+                    response.ContentType = Defaults.ContentType;
 
                     using (var outputStream = response.OutputStream)
                     {
-                        var collected = Registry.CollectAll();
-                        ScrapeHandler.ProcessScrapeRequest(collected, contentType, outputStream);
+                        ScrapeHandler.Process(Registry, outputStream);
                     }
                 }
 
