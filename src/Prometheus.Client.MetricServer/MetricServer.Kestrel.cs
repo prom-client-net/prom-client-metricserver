@@ -119,12 +119,15 @@ namespace Prometheus.Client.MetricServer
         /// <param name="mapPath">Map Path: Should strar with '/'</param>
         /// <param name="registry">Collector registry</param>
         /// <param name="collectors">IOnDemandCollectors</param>
-        /// <param name="certificate"></param>
+        /// <param name="certificate">Certificate for Https</param>
         /// <param name="useDefaultCollectors">Use default collectors</param>
         public MetricServer(string host, int port, string mapPath, ICollectorRegistry registry, List<IOnDemandCollector> collectors, X509Certificate2 certificate,
             bool useDefaultCollectors)
             : base(registry, collectors, useDefaultCollectors)
         {
+            if (!mapPath.StartsWith("/"))
+                throw new ArgumentException($"mapPath '{mapPath}' should start with '/'");
+            
             _certificate = certificate;
             _port = port;
             _hostName = host;
