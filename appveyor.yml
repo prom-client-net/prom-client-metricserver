@@ -1,22 +1,24 @@
 version: '{build}-{branch}'
 image: Visual Studio 2017
 
-skip_commits:
+sskip_commits:
   files:
-    - '**/*.md'
+  - '**/*.md'
 
-build_script:
-- ps: .\build.ps1
+  build_script:
+  - pwsh: dotnet build -c Release
 
-test_script:
-- ps: .\test.ps1
+  test_script:
+  - pwsh: dotnet test ./tests/Prometheus.Client.MetricServer.NetCore.Tests -c Release --no-build
 
-after_test:
-- ps: .\pack.ps1
+  after_test:
+  - pwsh: .\pack.ps1
 
-artifacts:
-- path: '**\*.nupkg'
-  name: All Nupkg
+  artifacts:
+  - path: '**\artifacts\nuget\*.nupkg'
+    name: Nuget
+  - path: '**\artifacts\myget\*.nupkg'
+  name: Myget
   
 deploy:
 - provider: NuGet

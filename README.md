@@ -1,5 +1,9 @@
 # Prometheus.Client.MetricServer
 
+[![MyGet](https://img.shields.io/myget/phnx47-beta/vpre/Prometheus.Client.MetricServer.svg)](https://www.myget.org/feed/phnx47-beta/package/nuget/Prometheus.Client.MetricServer)
+[![NuGet](https://img.shields.io/nuget/v/Prometheus.Client.MetricServer.svg)](https://www.nuget.org/packages/Prometheus.Client.MetricServer)
+[![NuGet](https://img.shields.io/nuget/dt/Prometheus.Client.MetricServer.svg)](https://www.nuget.org/packages/Prometheus.Client.MetricServer)
+
 [![NuGet Badge](https://buildstats.info/nuget/Prometheus.Client.MetricServer)](https://www.nuget.org/packages/Prometheus.Client.MetricServer/) 
 [![Build status](https://ci.appveyor.com/api/projects/status/ea3w0pycgyqqwd1o/branch/master?svg=true)](https://ci.appveyor.com/project/PrometheusClientNet/prometheus-client-metricserver/branch/master)
 [![License MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
@@ -30,6 +34,12 @@ static void Main(string[] args)
     metricServer.Stop();
 }
 ```
+
+## Support
+
+If you've got value from any of the content which I have created, but pull requests are not your thing, then I would also very much appreciate your support by buying me a coffee.
+
+<a href="https://www.buymeacoffee.com/phnx47" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
 
 
 

@@ -18,8 +18,6 @@ ProjectSection(SolutionItems) = preProject
 	appveyor.yml = appveyor.yml
 	LICENSE = LICENSE
 	README.md = README.md
-	build.ps1 = build.ps1
-	test.ps1 = test.ps1
 	pack.ps1 = pack.ps1
 	.editorconfig = .editorconfig
 EndProjectSection

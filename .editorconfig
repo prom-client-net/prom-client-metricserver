@@ -21,4 +21,3 @@ indent_size = 2
 
 [{*.sh, *.ps1}]
 indent_size = 2
- 
