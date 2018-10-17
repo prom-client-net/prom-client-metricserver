@@ -1,8 +1,7 @@
-﻿#if NETSTANDARD13 || NETSTANDARD20
+﻿#if !NET45
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -11,6 +10,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Prometheus.Client.Collectors.Abstractions;
+
+#if NETSTANDARD20
+
+using System.Net;
+
+#endif
 
 namespace Prometheus.Client.MetricServer
 {
@@ -200,7 +205,7 @@ namespace Prometheus.Client.MetricServer
                     if (context.Request.Path == _mapPath)
                     {
                         var response = context.Response;
-                        response.ContentType = "text/plain; version=0.0.4";
+                        response.ContentType = Defaults.ContentType;
 
                         using (var outputStream = response.Body)
                         {

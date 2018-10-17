@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD20 && !NETSTANDARD13
+﻿#if NET45
 
 using System.Collections.Generic;
 using System.Diagnostics;
