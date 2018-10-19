@@ -5,8 +5,9 @@
 [![NuGet](https://img.shields.io/nuget/dt/Prometheus.Client.MetricServer.svg)](https://www.nuget.org/packages/Prometheus.Client.MetricServer)
 
 [![Build status](https://ci.appveyor.com/api/projects/status/ea3w0pycgyqqwd1o/branch/master?svg=true)](https://ci.appveyor.com/project/PrometheusClientNet/prometheus-client-metricserver/branch/master)
-[![License MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/12e7517c49aa418b8ae2f242dfb8df2e)](https://www.codacy.com/app/phnx47/Prometheus.Client.MetricServer?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=phnx47/Prometheus.Client.MetricServer&amp;utm_campaign=Badge_Grade) 
+[![AppVeyor tests](https://img.shields.io/appveyor/tests/PrometheusClientNet/prometheus-client-metricserver.svg)](https://ci.appveyor.com/project/PrometheusClientNet/prometheus-client-metricserver/build/tests)
+[![License MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 Extension for [Prometheus.Client](https://github.com/PrometheusClientNet/Prometheus.Client)
 
