@@ -226,23 +226,20 @@ namespace Prometheus.Client.MetricServer
 
             public void Configure(IApplicationBuilder app)
             {
-                app.Run(context =>
+                app.Map(_mapPath, coreapp =>
                 {
-                    if (context.Request.Path == _mapPath)
+                    coreapp.Run(async context =>
                     {
                         var response = context.Response;
-                        response.ContentType = Defaults.ContentType;
+                        response.ContentType =  Defaults.ContentType;
 
                         using (var outputStream = response.Body)
                         {
                             ScrapeHandler.Process(_registry, outputStream);
                         }
 
-                        return Task.FromResult(true);
-                    }
-
-                    context.Response.StatusCode = 404;
-                    return Task.FromResult(true);
+                        await Task.FromResult(0).ConfigureAwait(false);
+                    });
                 });
             }
         }

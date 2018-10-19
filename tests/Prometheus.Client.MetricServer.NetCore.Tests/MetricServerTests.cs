@@ -36,7 +36,7 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
         }
         
         [Fact]
-        public async Task MapPath_WithEndSlash_NotWorking()
+        public async Task MapPath_WithEndSlash()
         {
             const int port = 9000;
             var metricServer = new MetricServer(port, "/test");
@@ -44,7 +44,8 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
 
             using (var httpClient = new HttpClient())
             {
-                await Assert.ThrowsAsync<HttpRequestException>(() =>  httpClient.GetStringAsync($"http://localhost:{port}/test/"));
+                var response = await httpClient.GetStringAsync($"http://localhost:{port}/test/");
+                Assert.False(string.IsNullOrEmpty(response));
             }
 
             metricServer.Stop();
