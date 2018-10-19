@@ -20,7 +20,7 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
         }
 
         [Fact]
-        public async Task Check_Base_MapPath()
+        public async Task Base_MapPath()
         {
             const int port = 9000;
             var metricServer = new MetricServer(port);
@@ -36,7 +36,22 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
         }
         
         [Fact]
-        public void Check_Wrong_MapPath()
+        public async Task MapPath_WithEndSlash_NotWorking()
+        {
+            const int port = 9000;
+            var metricServer = new MetricServer(port, "/test");
+            metricServer.Start();
+
+            using (var httpClient = new HttpClient())
+            {
+                await Assert.ThrowsAsync<HttpRequestException>(() =>  httpClient.GetStringAsync($"http://localhost:{port}/test/"));
+            }
+
+            metricServer.Stop();
+        }
+        
+        [Fact]
+        public void Wrong_MapPath()
         {
             const int port = 9000;
             Assert.Throws<ArgumentException>(() => new MetricServer(port, "temp"));
@@ -46,7 +61,7 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
         [InlineData("/metrics")]
         [InlineData("/metrics12")]
         [InlineData("/metrics965")]
-        public async Task Check_MapPath(string mapPath)
+        public async Task MapPath(string mapPath)
         {
             const int port = 9000;
             var metricServer = new MetricServer(port, mapPath);
