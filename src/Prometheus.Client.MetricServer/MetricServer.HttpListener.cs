@@ -133,6 +133,7 @@ namespace Prometheus.Client.MetricServer
 
                     if (request.RawUrl.TrimEnd('/') == _mapPath)
                     {
+                        response.StatusCode = 200;
                         response.ContentType = Defaults.ContentType;
                         using (var outputStream = response.OutputStream)
                         {
@@ -142,6 +143,9 @@ namespace Prometheus.Client.MetricServer
                     else
                     {
                         response.StatusCode = 404;
+                        using (var outputStream = response.OutputStream)
+                        {
+                        }
                     }
                 }
 
