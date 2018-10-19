@@ -16,7 +16,7 @@ namespace Prometheus.Client.MetricServer
     public class MetricServer : BaseMetricServer, IMetricServer
     {
         private readonly HttpListener _httpListener = new HttpListener();
-
+        private readonly string _mapPath;
 
         /// <inheritdoc />
         public MetricServer(int port)
@@ -89,7 +89,8 @@ namespace Prometheus.Client.MetricServer
             if (!mapPath.StartsWith("/"))
                 throw new ArgumentException($"mapPath '{mapPath}' should start with '/'");
 
-            _httpListener.Prefixes.Add($"http{(useHttps ? "s" : "")}://{host}:{port}{mapPath.TrimEnd('/')}/");
+            _mapPath = mapPath.TrimEnd('/');
+            _httpListener.Prefixes.Add($"http{(useHttps ? "s" : "")}://{host}:{port}/");
         }
 
         /// <inheritdoc />
@@ -127,12 +128,20 @@ namespace Prometheus.Client.MetricServer
                 try
                 {
                     var context = _httpListener.GetContext();
+                    var request = context.Request;
                     var response = context.Response;
-                    response.ContentType = Defaults.ContentType;
 
-                    using (var outputStream = response.OutputStream)
+                    if (request.RawUrl.TrimEnd('/') == _mapPath)
                     {
-                        ScrapeHandler.Process(Registry, outputStream);
+                        response.ContentType = Defaults.ContentType;
+                        using (var outputStream = response.OutputStream)
+                        {
+                            ScrapeHandler.Process(Registry, outputStream);
+                        }
+                    }
+                    else
+                    {
+                        response.StatusCode = 404;
                     }
                 }
 
