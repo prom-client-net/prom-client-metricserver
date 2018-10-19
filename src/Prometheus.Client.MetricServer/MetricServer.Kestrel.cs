@@ -42,7 +42,18 @@ namespace Prometheus.Client.MetricServer
             : this(Defaults.Host, port, useDefaultCollectors)
         {
         }
+        
+        /// <inheritdoc />
+        public MetricServer(int port, string mapPath)
+            : this(port, mapPath, Defaults.UseDefaultCollectors)
+        {
+        }
 
+        /// <inheritdoc />
+        public MetricServer(int port, string mapPath, bool useDefaultCollectors)
+            : this(Defaults.Host, port, mapPath, useDefaultCollectors)
+        {
+        }
 
         /// <inheritdoc />
         public MetricServer(string host, int port)
@@ -52,7 +63,19 @@ namespace Prometheus.Client.MetricServer
 
         /// <inheritdoc />
         public MetricServer(string host, int port, bool useDefaultCollectors)
-            : this(host, port, null, useDefaultCollectors)
+            : this(host, port, Defaults.MapPath, useDefaultCollectors)
+        {
+        }
+
+        /// <inheritdoc />
+        public MetricServer(string host, int port, string mapPath)
+            : this(host, port, mapPath, Defaults.UseDefaultCollectors)
+        {
+        }
+
+        /// <inheritdoc />
+        public MetricServer(string host, int port, string mapPath, bool useDefaultCollectors)
+            : this(host, port, mapPath, null, useDefaultCollectors)
         {
         }
 
@@ -76,39 +99,39 @@ namespace Prometheus.Client.MetricServer
 
         /// <inheritdoc />
         public MetricServer(string host, int port, X509Certificate2 certificate, bool useDefaultCollectors)
-            : this(host, port, Defaults.MapPath, null, new List<IOnDemandCollector>() , certificate, useDefaultCollectors)
+            : this(host, port, Defaults.MapPath, null, new List<IOnDemandCollector>(), certificate, useDefaultCollectors)
         {
         }
 
         /// <inheritdoc />
-        public MetricServer(string host, int port, string url, ICollectorRegistry registry)
-            : this(host, port, url, registry, Defaults.UseDefaultCollectors)
-        {
-        }
-        
-        /// <inheritdoc />
-        public MetricServer(string host, int port, string url, ICollectorRegistry registry, bool useDefaultCollectors)
-            : this(host, port, url, registry, new List<IOnDemandCollector>(), useDefaultCollectors)
-        {
-        }
-        /// <inheritdoc />
-        public MetricServer(string host, int port, string url, ICollectorRegistry registry, List<IOnDemandCollector> collectors)
-            : this(host, port, url, registry, collectors, Defaults.UseDefaultCollectors)
+        public MetricServer(string host, int port, string mapPath, ICollectorRegistry registry)
+            : this(host, port, mapPath, registry, Defaults.UseDefaultCollectors)
         {
         }
 
         /// <inheritdoc />
-        public MetricServer(string host, int port, string url, ICollectorRegistry registry, List<IOnDemandCollector> collectors, bool useDefaultCollectors)
-            : this(host, port, url, registry, collectors, null, useDefaultCollectors)
+        public MetricServer(string host, int port, string mapPath, ICollectorRegistry registry, bool useDefaultCollectors)
+            : this(host, port, mapPath, registry, new List<IOnDemandCollector>(), useDefaultCollectors)
         {
         }
 
         /// <inheritdoc />
-        public MetricServer(string host, int port, string url, ICollectorRegistry registry, List<IOnDemandCollector> collectors, X509Certificate2 certificate)
-            : this(host, port, url, registry, collectors, certificate, Defaults.UseDefaultCollectors)
+        public MetricServer(string host, int port, string mapPath, ICollectorRegistry registry, List<IOnDemandCollector> collectors)
+            : this(host, port, mapPath, registry, collectors, Defaults.UseDefaultCollectors)
         {
         }
 
+        /// <inheritdoc />
+        public MetricServer(string host, int port, string mapPath, ICollectorRegistry registry, List<IOnDemandCollector> collectors, bool useDefaultCollectors)
+            : this(host, port, mapPath, registry, collectors, null, useDefaultCollectors)
+        {
+        }
+
+        /// <inheritdoc />
+        public MetricServer(string host, int port, string mapPath, ICollectorRegistry registry, List<IOnDemandCollector> collectors, X509Certificate2 certificate)
+            : this(host, port, mapPath, registry, collectors, certificate, Defaults.UseDefaultCollectors)
+        {
+        }
 
         /// <inheritdoc />
         /// <summary>
@@ -127,7 +150,7 @@ namespace Prometheus.Client.MetricServer
         {
             if (!mapPath.StartsWith("/"))
                 throw new ArgumentException($"mapPath '{mapPath}' should start with '/'");
-            
+
             _certificate = certificate;
             _port = port;
             _hostName = host;

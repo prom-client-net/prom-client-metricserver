@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -17,23 +18,49 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
             metricServer.Stop();
             Assert.False(metricServer.IsRunning);
         }
-        
+
         [Fact]
-        public async Task CheckUrl()
+        public async Task Check_Base_MapPath()
         {
             const int port = 9000;
             var metricServer = new MetricServer(port);
             metricServer.Start();
-            
+
             using (var httpClient = new HttpClient())
             {
-               var response = await httpClient.GetStringAsync($"http://localhost:{port}/metrics");
-               Assert.False(string.IsNullOrEmpty(response)); 
+                var response = await httpClient.GetStringAsync($"http://localhost:{port}/metrics");
+                Assert.False(string.IsNullOrEmpty(response));
             }
 
             metricServer.Stop();
         }
         
+        [Fact]
+        public void Check_Wrong_MapPath()
+        {
+            const int port = 9000;
+            Assert.Throws<ArgumentException>(() => new MetricServer(port, "temp"));
+        }
+
+        [Theory]
+        [InlineData("/metrics")]
+        [InlineData("/metrics12")]
+        [InlineData("/metrics965")]
+        public async Task Check_MapPath(string mapPath)
+        {
+            const int port = 9000;
+            var metricServer = new MetricServer(port, mapPath);
+            metricServer.Start();
+
+            using (var httpClient = new HttpClient())
+            {
+                var response = await httpClient.GetStringAsync($"http://localhost:{port}" + mapPath);
+                Assert.False(string.IsNullOrEmpty(response));
+            }
+
+            metricServer.Stop();
+        }
+
         [Fact]
         public async Task FindMetric()
         {
@@ -44,7 +71,7 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
             const string metricName = "myCounter";
             var counter = Metrics.CreateCounter(metricName, "helptext");
             counter.Inc();
-            
+
             using (var httpClient = new HttpClient())
             {
                 var response = await httpClient.GetStringAsync($"http://localhost:{port}/metrics");
@@ -53,7 +80,7 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
 
             metricServer.Stop();
         }
-        
+
         [Fact]
         public async Task Url_NotFound()
         {
