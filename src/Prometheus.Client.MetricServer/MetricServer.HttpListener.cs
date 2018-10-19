@@ -89,7 +89,7 @@ namespace Prometheus.Client.MetricServer
             if (!mapPath.StartsWith("/"))
                 throw new ArgumentException($"mapPath '{mapPath}' should start with '/'");
 
-            _httpListener.Prefixes.Add($"http{(useHttps ? "s" : "")}://{host}:{port}{mapPath}");
+            _httpListener.Prefixes.Add($"http{(useHttps ? "s" : "")}://{host}:{port}{mapPath.TrimEnd('/')}/");
         }
 
         /// <inheritdoc />
