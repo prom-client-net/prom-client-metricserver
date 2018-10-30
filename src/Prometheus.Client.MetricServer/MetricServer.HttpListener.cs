@@ -89,7 +89,7 @@ namespace Prometheus.Client.MetricServer
             if (!mapPath.StartsWith("/"))
                 throw new ArgumentException($"mapPath '{mapPath}' should start with '/'");
 
-            _mapPath = mapPath.TrimEnd('/');
+            _mapPath = mapPath.EndsWith("/") ? mapPath : mapPath + "/";
             _httpListener.Prefixes.Add($"http{(useHttps ? "s" : "")}://{host}:{port}/");
         }
 
@@ -131,7 +131,9 @@ namespace Prometheus.Client.MetricServer
                     var request = context.Request;
                     var response = context.Response;
 
-                    if (request.RawUrl.TrimEnd('/') == _mapPath)
+                    var rawUrl = request.RawUrl.EndsWith("/") ? request.RawUrl : request.RawUrl + "/";
+                    
+                    if (rawUrl == _mapPath)
                     {
                         response.StatusCode = 200;
                         response.ContentType = Defaults.ContentType;
