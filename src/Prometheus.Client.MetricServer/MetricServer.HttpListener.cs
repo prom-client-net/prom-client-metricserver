@@ -151,7 +151,7 @@ namespace Prometheus.Client.MetricServer
                     }
                 }
 
-                catch (HttpListenerException ex)
+                catch (Exception ex)
                 {
                     Trace.WriteLine($"Error in MetricServer: {ex}");
                 }
