@@ -1,7 +1,5 @@
-﻿#if NET45
-
+#if !NETSTANDARD13
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Threading;
@@ -13,92 +11,44 @@ namespace Prometheus.Client.MetricServer
     /// <summary>
     ///     MetricSever based of HttpListener
     /// </summary>
-    public class MetricServer : BaseMetricServer, IMetricServer
+    public class MetricServer : IMetricServer
     {
+        private const string _contentType = "text/plain; version=0.0.4";
+
+        private readonly ICollectorRegistry _registry;
         private readonly HttpListener _httpListener = new HttpListener();
         private readonly string _mapPath;
+        private readonly CancellationTokenSource _cancellation = new CancellationTokenSource();
 
-        /// <inheritdoc />
-        public MetricServer(int port)
-            : this(port, Defaults.UseDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(int port, bool useDefaultCollectors)
-            : this(Defaults.Host, port, false, useDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(string host, int port, bool useHttps)
-            : this(host, port, useHttps, Defaults.UseDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(string host, int port, bool useHttps, bool useDefaultCollectors)
-            : this(host, port, Defaults.MapPath, useHttps, useDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(string host, int port, string url, bool useHttps)
-            : this(host, port, url, useHttps, Defaults.UseDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(string host, int port, string url, bool useHttps, bool useDefaultCollectors)
-            : this(host, port, url, null, new List<IOnDemandCollector>(), useHttps, useDefaultCollectors)
-        {
-        }
-        /// <inheritdoc />
-        public MetricServer(string host, int port, string url, ICollectorRegistry registry)
-            : this(host, port, url, registry, Defaults.UseDefaultCollectors)
-        {
-        }
-        
-        /// <inheritdoc />
-        public MetricServer(string host, int port, string url, ICollectorRegistry registry, bool useHttps)
-            : this(host, port, url, registry, useHttps, Defaults.UseDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(string host, int port, string url, ICollectorRegistry registry, bool useHttps, bool useDefaultCollectors)
-            : this(host, port, url, registry, new List<IOnDemandCollector>(), useHttps, useDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
         /// <summary>
-        ///     Constructor
+        /// Constructor
         /// </summary>
-        /// <param name="host">Host</param>
-        /// <param name="port">Port</param>
-        /// <param name="mapPath">Map Path: should start with '/'</param>
-        /// <param name="registry">Collector registry</param>
-        /// <param name="collectors">IOnDemandCollectors</param>
-        /// <param name="useHttps">use Https</param>
-        /// <param name="useDefaultCollectors">Use default collectors</param>
-        public MetricServer(string host, int port, string mapPath, ICollectorRegistry registry, List<IOnDemandCollector> collectors, bool useHttps,
-            bool useDefaultCollectors)
-            : base(registry, collectors, useDefaultCollectors)
+        /// <param name="registry">Collector registry </param>
+        /// <param name="options">Http server configuration options</param>
+        public MetricServer(ICollectorRegistry registry, MetricServerOptions options)
         {
-            if (!mapPath.StartsWith("/"))
-                throw new ArgumentException($"mapPath '{mapPath}' should start with '/'");
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
 
-            _mapPath = mapPath.EndsWith("/") ? mapPath : mapPath + "/";
-            _httpListener.Prefixes.Add($"http{(useHttps ? "s" : "")}://{host}:{port}/");
+            if (options.Port == 0)
+                throw new ArgumentException("Port should be specified");
+
+            if (string.IsNullOrEmpty(options.MapPath) || !options.MapPath.StartsWith("/"))
+                throw new ArgumentException($"mapPath '{options.MapPath}' should start with '/'");
+
+            _registry = registry ?? Metrics.DefaultCollectorRegistry;
+
+            _mapPath = options.MapPath.EndsWith("/") ? options.MapPath : options.MapPath + "/";
+            _httpListener.Prefixes.Add($"http{(options.UseHttps ? "s" : "")}://{options.Host}:{options.Port}/");
         }
 
         /// <inheritdoc />
         public void Start()
         {
-            if (IsRunning)
+            if (_httpListener.IsListening)
                 return;
 
+            _httpListener.Start();
             var bgThread = new Thread(StartListen)
             {
                 IsBackground = true,
@@ -108,26 +58,32 @@ namespace Prometheus.Client.MetricServer
         }
 
         /// <inheritdoc />
-        public bool IsRunning { get; private set; }
+        public bool IsRunning => _httpListener.IsListening;
 
         /// <inheritdoc />
         public void Stop()
         {
-            IsRunning = false;
+            _cancellation.Cancel();
             _httpListener.Stop();
             _httpListener.Close();
         }
 
         private void StartListen()
         {
-            _httpListener.Start();
-            IsRunning = true;
+            var cancel = _cancellation.Token;
 
-            while (IsRunning)
+            while (!_cancellation.IsCancellationRequested)
             {
                 try
                 {
-                    var context = _httpListener.GetContext();
+                    var getContext = _httpListener.GetContextAsync();
+                    getContext.Wait(cancel);
+                    if (cancel.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    var context = getContext.Result;
                     var request = context.Request;
                     var response = context.Response;
 
@@ -136,10 +92,10 @@ namespace Prometheus.Client.MetricServer
                     if (rawUrl == _mapPath)
                     {
                         response.StatusCode = 200;
-                        response.ContentType = Defaults.ContentType;
+                        response.ContentType = _contentType;
                         using (var outputStream = response.OutputStream)
                         {
-                            ScrapeHandler.Process(Registry, outputStream);
+                            ScrapeHandler.ProcessAsync(_registry, outputStream).GetAwaiter().GetResult();
                         }
                     }
                     else
