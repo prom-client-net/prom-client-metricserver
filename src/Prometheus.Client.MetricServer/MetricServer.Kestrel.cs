@@ -1,21 +1,12 @@
-﻿#if !NET45
+#if NETSTANDARD13
 
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Prometheus.Client.Collectors.Abstractions;
-
-#if NETSTANDARD20
-
-using System.Net;
-
-#endif
 
 namespace Prometheus.Client.MetricServer
 {
@@ -23,138 +14,30 @@ namespace Prometheus.Client.MetricServer
     /// <summary>
     ///     MetricSever based of Kestrel
     /// </summary>
-    public class MetricServer : BaseMetricServer, IMetricServer
+    public class MetricServer : IMetricServer
     {
-        private readonly X509Certificate2 _certificate;
-        private readonly string _hostName;
-        private readonly int _port;
-        private readonly string _mapPath;
+        private readonly MetricServerOptions _options;
+        private readonly ICollectorRegistry _registry;
         private IWebHost _host;
 
-        /// <inheritdoc />
-        public MetricServer(int port)
-            : this(port, Defaults.UseDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(int port, bool useDefaultCollectors)
-            : this(Defaults.Host, port, useDefaultCollectors)
-        {
-        }
-        
-        /// <inheritdoc />
-        public MetricServer(int port, string mapPath)
-            : this(port, mapPath, Defaults.UseDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(int port, string mapPath, bool useDefaultCollectors)
-            : this(Defaults.Host, port, mapPath, useDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(string host, int port)
-            : this(host, port, Defaults.UseDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(string host, int port, bool useDefaultCollectors)
-            : this(host, port, Defaults.MapPath, useDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(string host, int port, string mapPath)
-            : this(host, port, mapPath, Defaults.UseDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(string host, int port, string mapPath, bool useDefaultCollectors)
-            : this(host, port, mapPath, null, useDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(int port, X509Certificate2 certificate)
-            : this(port, certificate, Defaults.UseDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(int port, X509Certificate2 certificate, bool useDefaultCollectors)
-            : this(Defaults.Host, port, certificate, useDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(string host, int port, X509Certificate2 certificate)
-            : this(host, port, certificate, Defaults.UseDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(string host, int port, X509Certificate2 certificate, bool useDefaultCollectors)
-            : this(host, port, Defaults.MapPath, null, new List<IOnDemandCollector>(), certificate, useDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(string host, int port, string mapPath, ICollectorRegistry registry)
-            : this(host, port, mapPath, registry, Defaults.UseDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(string host, int port, string mapPath, ICollectorRegistry registry, bool useDefaultCollectors)
-            : this(host, port, mapPath, registry, new List<IOnDemandCollector>(), useDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(string host, int port, string mapPath, ICollectorRegistry registry, List<IOnDemandCollector> collectors)
-            : this(host, port, mapPath, registry, collectors, Defaults.UseDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(string host, int port, string mapPath, ICollectorRegistry registry, List<IOnDemandCollector> collectors, bool useDefaultCollectors)
-            : this(host, port, mapPath, registry, collectors, null, useDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
-        public MetricServer(string host, int port, string mapPath, ICollectorRegistry registry, List<IOnDemandCollector> collectors, X509Certificate2 certificate)
-            : this(host, port, mapPath, registry, collectors, certificate, Defaults.UseDefaultCollectors)
-        {
-        }
-
-        /// <inheritdoc />
         /// <summary>
-        ///     Constructor
+        /// Constructor
         /// </summary>
-        /// <param name="host">Host</param>
-        /// <param name="port">Port</param>
-        /// <param name="mapPath">Map Path: Should strar with '/'</param>
-        /// <param name="registry">Collector registry</param>
-        /// <param name="collectors">IOnDemandCollectors</param>
-        /// <param name="certificate">Certificate for Https</param>
-        /// <param name="useDefaultCollectors">Use default collectors</param>
-        public MetricServer(string host, int port, string mapPath, ICollectorRegistry registry, List<IOnDemandCollector> collectors, X509Certificate2 certificate,
-            bool useDefaultCollectors)
-            : base(registry, collectors, useDefaultCollectors)
+        /// <param name="registry">Collector registry </param>
+        /// <param name="options">Http server configuration options</param>
+        public MetricServer(ICollectorRegistry registry, MetricServerOptions options)
         {
-            if (!mapPath.StartsWith("/"))
-                throw new ArgumentException($"mapPath '{mapPath}' should start with '/'");
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
 
-            _certificate = certificate;
-            _port = port;
-            _hostName = host;
-            _mapPath = mapPath;
+            if (options.Port == 0)
+                throw new ArgumentException("Port should be specified");
+
+            if (string.IsNullOrEmpty(options.MapPath) || !options.MapPath.StartsWith("/"))
+                throw new ArgumentException($"mapPath '{options.MapPath}' should start with '/'");
+
+            _registry = registry ?? Metrics.DefaultCollectorRegistry;
+            _options = options;
         }
 
         /// <inheritdoc />
@@ -175,18 +58,11 @@ namespace Prometheus.Client.MetricServer
                 .UseConfiguration(config)
                 .UseKestrel(options =>
                 {
-#if NETSTANDARD13
-                    if (_certificate != null)
-                        options.UseHttps(_certificate);
-#endif
-
-#if NETSTANDARD20
-                    if (_certificate != null)
-                        options.Listen(IPAddress.Any, _port, listenOptions => { listenOptions.UseHttps(_certificate); });
-#endif
+                    if (_options.Certificate != null)
+                        options.UseHttps(_options.Certificate);
                 })
-                .UseUrls($"http{(_certificate != null ? "s" : "")}://{_hostName}:{_port}")
-                .ConfigureServices(services => { services.AddSingleton<IStartup>(new Startup(Registry, _mapPath)); })
+                .UseUrls($"http{(_options.Certificate != null ? "s" : "")}://{_options.Host}:{_options.Port}")
+                .ConfigureServices(services => { services.AddSingleton<IStartup>(new Startup(_registry, _options.MapPath)); })
                 .UseSetting(WebHostDefaults.ApplicationKey, typeof(Startup).GetTypeInfo().Assembly.FullName)
                 .Build();
 
@@ -205,6 +81,8 @@ namespace Prometheus.Client.MetricServer
 
         internal class Startup : IStartup
         {
+            private const string _contentType = "text/plain; version=0.0.4";
+
             private readonly ICollectorRegistry _registry;
             private readonly string _mapPath;
 
@@ -231,14 +109,12 @@ namespace Prometheus.Client.MetricServer
                     coreapp.Run(async context =>
                     {
                         var response = context.Response;
-                        response.ContentType =  Defaults.ContentType;
+                        response.ContentType = _contentType;
 
                         using (var outputStream = response.Body)
                         {
-                            ScrapeHandler.Process(_registry, outputStream);
+                            await ScrapeHandler.ProcessAsync(_registry, outputStream);
                         }
-
-                        await Task.FromResult(0).ConfigureAwait(false);
                     });
                 });
             }
