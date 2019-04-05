@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26228.4
@@ -9,18 +9,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prometheus.Client.MetricSer
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{465CE32E-016E-46A1-9636-3411CB742385}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prometheus.Client.MetricServer.NetCore.Tests", "tests\Prometheus.Client.MetricServer.NetCore.Tests\Prometheus.Client.MetricServer.NetCore.Tests.csproj", "{7DC9CABA-8C8B-4ADD-BF3F-D67BB580027A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Prometheus.Client.MetricServer.NetCore.Tests", "tests\Prometheus.Client.MetricServer.NetCore.Tests\Prometheus.Client.MetricServer.NetCore.Tests.csproj", "{7DC9CABA-8C8B-4ADD-BF3F-D67BB580027A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7ADF00AE-7F6D-4C7E-B0F0-B2A19627DDF8}"
-ProjectSection(SolutionItems) = preProject
-	.gitattributes = .gitattributes
-	.gitignore = .gitignore
-	appveyor.yml = appveyor.yml
-	LICENSE = LICENSE
-	README.md = README.md
-	pack.ps1 = pack.ps1
-	.editorconfig = .editorconfig
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		appveyor.yml = appveyor.yml
+		LICENSE = LICENSE
+		pack.ps1 = pack.ps1
+		Prometheus.Client.MetricServer.snk = Prometheus.Client.MetricServer.snk
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
