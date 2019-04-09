@@ -1,8 +1,9 @@
 # Prometheus.Client.MetricServer
 
-[![MyGet](https://img.shields.io/myget/phnx47-beta/vpre/Prometheus.Client.MetricServer.svg)](https://www.myget.org/feed/phnx47-beta/package/nuget/Prometheus.Client.MetricServer)
+[![MyGet](https://img.shields.io/myget/prometheus-client-net/vpre/Prometheus.Client.MetricServer.svg?label=myget)](https://www.myget.org/feed/prometheus-client-net/package/nuget/Prometheus.Client.MetricServer)
 [![NuGet](https://img.shields.io/nuget/v/Prometheus.Client.MetricServer.svg)](https://www.nuget.org/packages/Prometheus.Client.MetricServer)
 [![NuGet](https://img.shields.io/nuget/dt/Prometheus.Client.MetricServer.svg)](https://www.nuget.org/packages/Prometheus.Client.MetricServer)
+[![Gitter](https://img.shields.io/gitter/room/PrometheusClientNet/community.svg)](https://gitter.im/PrometheusClientNet/community)
 
 [![Build status](https://ci.appveyor.com/api/projects/status/ea3w0pycgyqqwd1o/branch/master?svg=true)](https://ci.appveyor.com/project/PrometheusClientNet/prometheus-client-metricserver/branch/master)
 [![AppVeyor tests](https://img.shields.io/appveyor/tests/PrometheusClientNet/prometheus-client-metricserver.svg)](https://ci.appveyor.com/project/PrometheusClientNet/prometheus-client-metricserver/build/tests)
@@ -14,9 +15,9 @@ Extension for [Prometheus.Client](https://github.com/PrometheusClientNet/Prometh
 
     dotnet add package Prometheus.Client.MetricServer
 
-#### Quik start:
+#### Quick start:
 
-There are [Examples](https://github.com/phnx47/Prometheus.Client.Examples/tree/master/MetricServer)
+There are [Examples](https://github.com/PrometheusClientNet/Prometheus.Client.Examples/tree/master/MetricServer)
 
 ```csharp
 

@@ -1,8 +1,8 @@
 ﻿*.user
-*.exe
 
 .vs
+.vscode
+.idea
+
 bin
 obj
-packages
-.idea
