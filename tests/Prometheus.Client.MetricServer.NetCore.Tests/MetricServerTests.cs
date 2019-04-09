@@ -9,11 +9,12 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
 {
     public class MetricServerTests
     {
+        private const int _port = 5050;
+        
         [Fact]
         public void Start_Stop_IsRunning()
         {
-            const int port = 9000;
-            var metricServer = new MetricServer(new CollectorRegistry(), new MetricServerOptions { Port = port });
+            var metricServer = new MetricServer(new CollectorRegistry(), new MetricServerOptions { Port = _port });
             metricServer.Start();
             Assert.True(metricServer.IsRunning);
             metricServer.Stop();
@@ -23,13 +24,13 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
         [Fact]
         public async Task Base_MapPath()
         {
-            const int port = 9000;
-            var metricServer = new MetricServer(new CollectorRegistry(), new MetricServerOptions { Port = port });
+ 
+            var metricServer = new MetricServer(new CollectorRegistry(), new MetricServerOptions { Port = _port });
             metricServer.Start();
 
             using (var httpClient = new HttpClient())
             {
-                var response = await httpClient.GetStringAsync($"http://localhost:{port}/metrics");
+                var response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
                 Assert.False(string.IsNullOrEmpty(response));
             }
 
@@ -39,15 +40,14 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
         [Fact]
         public async Task MapPath_WithEndSlash()
         {
-            const int port = 9000;
             var metricServer = new MetricServer(
                 new CollectorRegistry(),
-                new MetricServerOptions { Port = port, MapPath = "/test" });
+                new MetricServerOptions { Port = _port, MapPath = "/test" });
             metricServer.Start();
 
             using (var httpClient = new HttpClient())
             {
-                var response = await httpClient.GetStringAsync($"http://localhost:{port}/test/");
+                var response = await httpClient.GetStringAsync($"http://localhost:{_port}/test/");
                 Assert.False(string.IsNullOrEmpty(response));
             }
 
@@ -57,10 +57,9 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
         [Fact]
         public void Wrong_MapPath()
         {
-            const int port = 9000;
             Assert.Throws<ArgumentException>(() => new MetricServer(
                 new CollectorRegistry(),
-                new MetricServerOptions { Port = port, MapPath = "temp" }));
+                new MetricServerOptions { Port = _port, MapPath = "temp" }));
         }
 
         [Theory]
@@ -69,15 +68,14 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
         [InlineData("/metrics965")]
         public async Task MapPath(string mapPath)
         {
-            const int port = 9000;
             var metricServer = new MetricServer(
                 new CollectorRegistry(),
-                new MetricServerOptions { Port = port, MapPath = mapPath });
+                new MetricServerOptions { Port = _port, MapPath = mapPath });
             metricServer.Start();
 
             using (var httpClient = new HttpClient())
             {
-                var response = await httpClient.GetStringAsync($"http://localhost:{port}" + mapPath);
+                var response = await httpClient.GetStringAsync($"http://localhost:{_port}" + mapPath);
                 Assert.False(string.IsNullOrEmpty(response));
             }
 
@@ -87,10 +85,9 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
         [Fact]
         public async Task FindMetric()
         {
-            const int port = 9000;
             var registry = new CollectorRegistry();
             var factory = new MetricFactory(registry);
-            var metricServer = new MetricServer(registry, new MetricServerOptions { Port = port });
+            var metricServer = new MetricServer(registry, new MetricServerOptions { Port = _port });
 
             metricServer.Start();
 
@@ -100,7 +97,7 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
 
             using (var httpClient = new HttpClient())
             {
-                var response = await httpClient.GetStringAsync($"http://localhost:{port}/metrics");
+                var response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
                 Assert.Contains(metricName, response);
             }
 
@@ -110,13 +107,12 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
         [Fact]
         public async Task Url_NotFound()
         {
-            const int port = 9000;
-            var metricServer = new MetricServer(new CollectorRegistry(), new MetricServerOptions { Port = port });
+            var metricServer = new MetricServer(new CollectorRegistry(), new MetricServerOptions { Port = _port });
             metricServer.Start();
 
             using (var httpClient = new HttpClient())
             {
-                var response = await httpClient.GetAsync($"http://localhost:{port}");
+                var response = await httpClient.GetAsync($"http://localhost:{_port}");
                 Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             }
 
