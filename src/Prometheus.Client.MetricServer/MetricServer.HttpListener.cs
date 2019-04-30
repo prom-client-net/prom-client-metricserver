@@ -48,7 +48,6 @@ namespace Prometheus.Client.MetricServer
             if (_httpListener.IsListening)
                 return;
 
-            _httpListener.Start();
             var bgThread = new Thread(StartListen)
             {
                 IsBackground = true,
@@ -70,6 +69,8 @@ namespace Prometheus.Client.MetricServer
 
         private void StartListen()
         {
+            _httpListener.Start();            
+
             var cancel = _cancellation.Token;
 
             while (!_cancellation.IsCancellationRequested)
