@@ -16,14 +16,15 @@ after_test:
 
 artifacts:
   - path: '**\artifacts\nuget\*.nupkg'
-    name: Nuget
+    name: NuGet
   - path: '**\artifacts\myget\*.nupkg'
-    name: Myget
+    name: MyGet
   
 deploy:
   - provider: NuGet
     api_key:
       secure: PtfAzDzYtEFjYKQmsfbJAXRrqlWDR2CesuEeupukTeyyD7O9bzMtRXHmBVYUu1sJ
+    artifact: NuGet
     on:
       APPVEYOR_REPO_TAG: true
       
