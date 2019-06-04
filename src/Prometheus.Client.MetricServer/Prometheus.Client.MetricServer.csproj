@@ -20,7 +20,7 @@
     <AssemblyOriginatorKeyFile>../../Prometheus.Client.MetricServer.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Prometheus.Client" Version="3.0.0" />
+    <PackageReference Include="Prometheus.Client" Version="3.0.1" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.3'">
     <DefineConstants>$(DefineConstants);NETSTANDARD13</DefineConstants>
