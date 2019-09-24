@@ -1,4 +1,3 @@
-#if !NETSTANDARD13
 using System;
 using System.Diagnostics;
 using System.Net;
@@ -115,5 +114,3 @@ namespace Prometheus.Client.MetricServer
         }
     }
 }
-
-#endif

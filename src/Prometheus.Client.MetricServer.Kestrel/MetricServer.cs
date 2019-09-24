@@ -1,6 +1,5 @@
-#if NETSTANDARD13
-
 using System;
+using System.Net;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -8,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Prometheus.Client.Collectors.Abstractions;
 
-namespace Prometheus.Client.MetricServer
+namespace Prometheus.Client.MetricServer.Kestrel
 {
     /// <inheritdoc cref="IMetricServer" />
     /// <summary>
@@ -58,8 +57,15 @@ namespace Prometheus.Client.MetricServer
                 .UseConfiguration(config)
                 .UseKestrel(options =>
                 {
+#if NETSTANDARD13
                     if (_options.Certificate != null)
                         options.UseHttps(_options.Certificate);
+#endif
+
+#if NETSTANDARD20
+                    if (_options.Certificate != null)
+                        options.Listen(IPAddress.Any, _options.Port, listenOptions => { listenOptions.UseHttps(_options.Certificate); });
+#endif
                 })
                 .UseUrls($"http{(_options.Certificate != null ? "s" : "")}://{_options.Host}:{_options.Port}")
                 .ConfigureServices(services => { services.AddSingleton<IStartup>(new Startup(_registry, _options.MapPath)); })
@@ -121,5 +127,3 @@ namespace Prometheus.Client.MetricServer
         }
     }
 }
-
-#endif

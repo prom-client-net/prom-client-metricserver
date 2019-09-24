@@ -1,4 +1,6 @@
-namespace Prometheus.Client.MetricServer
+using System.Security.Cryptography.X509Certificates;
+
+namespace Prometheus.Client.MetricServer.Kestrel
 {
     /// <summary>
     /// Metric Server Options
@@ -21,8 +23,8 @@ namespace Prometheus.Client.MetricServer
         public string MapPath { get; set; } = "/metrics";
 
         /// <summary>
-        /// Defines if https should be used
+        /// Https certificate
         /// </summary>
-        public bool UseHttps { get; set; } = false;
+        public X509Certificate2 Certificate { get; set; }
     }
 }
