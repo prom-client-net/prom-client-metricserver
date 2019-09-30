@@ -3,8 +3,8 @@
     <Description>MetricServer for the Prometheus.Client</Description>
     <Copyright>2019 © Sergey Kuznetsov</Copyright>
     <AssemblyTitle>Prometheus.Client.MetricServer</AssemblyTitle>
-    <VersionPrefix>3.0.2</VersionPrefix>
-    <Authors>Sergey Kuznetsov</Authors>
+    <VersionPrefix>3.1.0</VersionPrefix>
+    <Authors>Sergey Kuznetsov, Oleksandr Poliakov</Authors>
     <TargetFrameworks>netstandard2.0;netcoreapp2.2</TargetFrameworks>
     <AssemblyName>Prometheus.Client.MetricServer</AssemblyName>
     <PackageId>Prometheus.Client.MetricServer</PackageId>
