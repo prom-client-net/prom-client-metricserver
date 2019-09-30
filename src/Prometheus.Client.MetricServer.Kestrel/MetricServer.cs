@@ -62,7 +62,7 @@ namespace Prometheus.Client.MetricServer.Kestrel
                         options.UseHttps(_options.Certificate);
 #endif
 
-#if NETSTANDARD20
+#if !NETSTANDARD13
                     if (_options.Certificate != null)
                         options.Listen(IPAddress.Any, _options.Port, listenOptions => { listenOptions.UseHttps(_options.Certificate); });
 #endif

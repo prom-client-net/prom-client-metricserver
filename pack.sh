@@ -7,6 +7,5 @@ if ${APPVEYOR_REPO_TAG} == "true"  ; then
 else
   echo "Pack for MyGet"
   dotnet pack ${APPVEYOR_BUILD_FOLDER}/src/Prometheus.Client.MetricServer -c Release --include-symbols --no-build --version-suffix build${APPVEYOR_BUILD_NUMBER} -o artifacts/myget
-  dotnet pack ${APPVEYOR_BUILD_FOLDER}/src/Prometheus.Client.MetricServer.Kestrel -c Release --include-symbols --no-build --version-suffix build${APPVEYOR_BUILD_NUMBER} -o 
-  artifacts/myget
+  dotnet pack ${APPVEYOR_BUILD_FOLDER}/src/Prometheus.Client.MetricServer.Kestrel -c Release --include-symbols --no-build --version-suffix build${APPVEYOR_BUILD_NUMBER} -o artifacts/myget
 fi
