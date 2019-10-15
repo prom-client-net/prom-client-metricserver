@@ -26,7 +26,12 @@ There are [Examples](https://github.com/PrometheusClientNet/Prometheus.Client.Ex
 
 static void Main(string[] args)
 {
-    IMetricServer metricServer = new MetricServer("localhost", 9091);
+    var options = new MetricServerOptions
+    {
+        Port = 9091                
+    };
+            
+    IMetricServer metricServer = new MetricServer(options);
     metricServer.Start();
     ...
     
