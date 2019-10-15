@@ -22,6 +22,15 @@ namespace Prometheus.Client.MetricServer.Kestrel
         /// <summary>
         /// Constructor
         /// </summary>
+        /// <param name="options">Http server configuration options</param>
+        public MetricServer(MetricServerOptions options)
+            :this(null, options)
+        {
+        }
+        
+        /// <summary>
+        /// Constructor
+        /// </summary>
         /// <param name="registry">Collector registry </param>
         /// <param name="options">Http server configuration options</param>
         public MetricServer(ICollectorRegistry registry, MetricServerOptions options)
