@@ -1,23 +1,25 @@
 using System;
-using System.Diagnostics;
+#if !NETSTANDARD13
 using System.Net;
-using System.Threading;
+#endif
+using System.Reflection;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Prometheus.Client.Collectors.Abstractions;
 
 namespace Prometheus.Client.MetricServer
 {
     /// <inheritdoc cref="IMetricServer" />
     /// <summary>
-    ///     MetricSever based of HttpListener
+    ///     MetricSever based of Kestrel
     /// </summary>
     public class MetricServer : IMetricServer
     {
-        private const string _contentType = "text/plain; version=0.0.4";
-
+        private readonly MetricServerOptions _options;
         private readonly ICollectorRegistry _registry;
-        private readonly HttpListener _httpListener = new HttpListener();
-        private readonly string _mapPath;
-        private readonly CancellationTokenSource _cancellation = new CancellationTokenSource();
+        private IWebHost _host;
 
         /// <summary>
         /// Constructor
@@ -27,7 +29,7 @@ namespace Prometheus.Client.MetricServer
             :this(null, options)
         {
         }
-
+        
         /// <summary>
         /// Constructor
         /// </summary>
@@ -45,80 +47,93 @@ namespace Prometheus.Client.MetricServer
                 throw new ArgumentException($"mapPath '{options.MapPath}' should start with '/'");
 
             _registry = registry ?? Metrics.DefaultCollectorRegistry;
-
-            _mapPath = options.MapPath.EndsWith("/") ? options.MapPath : options.MapPath + "/";
-            _httpListener.Prefixes.Add($"http{(options.UseHttps ? "s" : "")}://{options.Host}:{options.Port}/");
+            _options = options;
         }
+
+        /// <inheritdoc />
+        public bool IsRunning => _host != null;
 
         /// <inheritdoc />
         public void Start()
         {
-            if (_httpListener.IsListening)
+            if (IsRunning)
                 return;
 
-            _httpListener.Start();
-            var bgThread = new Thread(StartListen)
-            {
-                IsBackground = true,
-                Name = "MetricServer"
-            };
-            bgThread.Start();
-        }
+            var configBuilder = new ConfigurationBuilder();
+            configBuilder.Properties["parent"] = this;
+            var config = configBuilder.Build();
 
-        /// <inheritdoc />
-        public bool IsRunning => _httpListener.IsListening;
+
+            _host = new WebHostBuilder()
+                .UseConfiguration(config)
+                .UseKestrel(options =>
+                {
+#if NETSTANDARD13
+                    if (_options.Certificate != null)
+                        options.UseHttps(_options.Certificate);
+#endif
+
+#if !NETSTANDARD13
+                    if (_options.Certificate != null)
+                        options.Listen(IPAddress.Any, _options.Port, listenOptions => { listenOptions.UseHttps(_options.Certificate); });
+#endif
+                })
+                .UseUrls($"http{(_options.Certificate != null ? "s" : "")}://{_options.Host}:{_options.Port}")
+                .ConfigureServices(services => { services.AddSingleton<IStartup>(new Startup(_registry, _options.MapPath)); })
+                .UseSetting(WebHostDefaults.ApplicationKey, typeof(Startup).GetTypeInfo().Assembly.FullName)
+                .Build();
+
+            _host.Start();
+        }
 
         /// <inheritdoc />
         public void Stop()
         {
-            _cancellation.Cancel();
-            _httpListener.Stop();
-            _httpListener.Close();
+            if (!IsRunning)
+                return;
+
+            _host.Dispose();
+            _host = null;
         }
 
-        private void StartListen()
+        internal class Startup : IStartup
         {
-            var cancel = _cancellation.Token;
+            private const string _contentType = "text/plain; version=0.0.4";
 
-            while (!_cancellation.IsCancellationRequested)
+            private readonly ICollectorRegistry _registry;
+            private readonly string _mapPath;
+
+            public Startup(ICollectorRegistry registry, string mapPath)
             {
-                try
+                _registry = registry;
+                _mapPath = mapPath;
+
+                var builder = new ConfigurationBuilder();
+                Configuration = builder.Build();
+            }
+
+            public IConfigurationRoot Configuration { get; }
+
+            public IServiceProvider ConfigureServices(IServiceCollection services)
+            {
+                return services.BuildServiceProvider();
+            }
+
+            public void Configure(IApplicationBuilder app)
+            {
+                app.Map(_mapPath, coreapp =>
                 {
-                    var getContext = _httpListener.GetContextAsync();
-                    getContext.Wait(cancel);
-                    if (cancel.IsCancellationRequested)
+                    coreapp.Run(async context =>
                     {
-                        return;
-                    }
-
-                    var context = getContext.Result;
-                    var request = context.Request;
-                    var response = context.Response;
-
-                    var rawUrl = request.RawUrl.EndsWith("/") ? request.RawUrl : request.RawUrl + "/";
-                    
-                    if (rawUrl == _mapPath)
-                    {
-                        response.StatusCode = 200;
+                        var response = context.Response;
                         response.ContentType = _contentType;
-                        using (var outputStream = response.OutputStream)
-                        {
-                            ScrapeHandler.ProcessAsync(_registry, outputStream).GetAwaiter().GetResult();
-                        }
-                    }
-                    else
-                    {
-                        response.StatusCode = 404;
-                        using (var outputStream = response.OutputStream)
-                        {
-                        }
-                    }
-                }
 
-                catch (Exception ex)
-                {
-                    Trace.WriteLine($"Error in MetricServer: {ex}");
-                }
+                        using (var outputStream = response.Body)
+                        {
+                            await ScrapeHandler.ProcessAsync(_registry, outputStream);
+                        }
+                    });
+                });
             }
         }
     }

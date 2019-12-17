@@ -2,12 +2,12 @@
   <PropertyGroup>
     <Description>MetricServer for the Prometheus.Client</Description>
     <Copyright>2019 © Sergey Kuznetsov</Copyright>
-    <AssemblyTitle>Prometheus.Client.MetricServer</AssemblyTitle>
-    <VersionPrefix>3.1.0</VersionPrefix>
+    <AssemblyTitle>Prometheus.Client.MetricServer.Kestrel</AssemblyTitle>
+    <VersionPrefix>3.2.0</VersionPrefix>
     <Authors>Sergey Kuznetsov, Oleksandr Poliakov</Authors>
-    <TargetFrameworks>netstandard2.0;netcoreapp2.2</TargetFrameworks>
-    <AssemblyName>Prometheus.Client.MetricServer</AssemblyName>
-    <PackageId>Prometheus.Client.MetricServer</PackageId>
+    <TargetFrameworks>netstandard1.3;netstandard2.0;netcoreapp2.2;netcoreapp3.0</TargetFrameworks>
+    <AssemblyName>Prometheus.Client.MetricServer.Kestrel</AssemblyName>
+    <PackageId>Prometheus.Client.MetricServer.Kestrel</PackageId>
     <PackageTags>prometheus;metrics</PackageTags>
     <PackageIconUrl>https://image.ibb.co/k4Sc0k/prometheus.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/PrometheusClientNet/Prometheus.Client.MetricServer</PackageProjectUrl>
@@ -20,6 +20,24 @@
     <AssemblyOriginatorKeyFile>../../Prometheus.Client.MetricServer.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Prometheus.Client" Version="3.0.1" />
+    <PackageReference Include="Prometheus.Client" Version="3.1.0-build379" />
+  </ItemGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.3'">
+    <DefineConstants>$(DefineConstants);NETSTANDARD13</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="1.1.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="2.1.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="2.1.0" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 </Project>
