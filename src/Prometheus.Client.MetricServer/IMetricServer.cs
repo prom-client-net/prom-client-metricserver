@@ -1,4 +1,4 @@
-﻿namespace Prometheus.Client.MetricServer
+namespace Prometheus.Client.MetricServer
 {
     /// <summary>
     ///     MetricSever
