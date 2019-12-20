@@ -9,7 +9,7 @@
     <AssemblyName>Prometheus.Client.MetricServer.Kestrel</AssemblyName>
     <PackageId>Prometheus.Client.MetricServer.Kestrel</PackageId>
     <PackageTags>prometheus;metrics</PackageTags>
-    <PackageIconUrl>https://image.ibb.co/k4Sc0k/prometheus.png</PackageIconUrl>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/PrometheusClientNet/Prometheus.Client.MetricServer</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
@@ -19,6 +19,9 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>../../Prometheus.Client.MetricServer.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="../../icon.png" Pack="true" Visible="false" PackagePath="" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Prometheus.Client" Version="3.1.0-build379" />
   </ItemGroup>
