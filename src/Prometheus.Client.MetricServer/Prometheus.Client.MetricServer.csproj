@@ -2,12 +2,12 @@
   <PropertyGroup>
     <Description>MetricServer for the Prometheus.Client</Description>
     <Copyright>2019 © Sergey Kuznetsov</Copyright>
-    <AssemblyTitle>Prometheus.Client.MetricServer.Kestrel</AssemblyTitle>
+    <AssemblyTitle>Prometheus.Client.MetricServer</AssemblyTitle>
     <VersionPrefix>3.2.0</VersionPrefix>
     <Authors>Sergey Kuznetsov, Oleksandr Poliakov</Authors>
     <TargetFrameworks>netstandard1.3;netstandard2.0;netcoreapp2.2;netcoreapp3.0</TargetFrameworks>
-    <AssemblyName>Prometheus.Client.MetricServer.Kestrel</AssemblyName>
-    <PackageId>Prometheus.Client.MetricServer.Kestrel</PackageId>
+    <AssemblyName>Prometheus.Client.MetricServer</AssemblyName>
+    <PackageId>Prometheus.Client.MetricServer</PackageId>
     <PackageTags>prometheus;metrics</PackageTags>
     <PackageIcon>icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/PrometheusClientNet/Prometheus.Client.MetricServer</PackageProjectUrl>
