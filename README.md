@@ -14,9 +14,6 @@ Extension for [Prometheus.Client](https://github.com/PrometheusClientNet/Prometh
 #### Installation:
 
     dotnet add package Prometheus.Client.MetricServer
- or
- 
-    dotnet add package Prometheus.Client.MetricServer.Kestrel
 
 #### Quick start:
 
