@@ -1,7 +1,5 @@
 using System;
-#if !NETSTANDARD13
 using System.Net;
-#endif
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -46,7 +44,7 @@ namespace Prometheus.Client.MetricServer
             if (string.IsNullOrEmpty(options.MapPath) || !options.MapPath.StartsWith("/"))
                 throw new ArgumentException($"mapPath '{options.MapPath}' should start with '/'");
 
-            _registry = registry ?? Metrics.DefaultCollectorRegistry;
+            _registry = registry;
             _options = options;
         }
 
@@ -68,15 +66,8 @@ namespace Prometheus.Client.MetricServer
                 .UseConfiguration(config)
                 .UseKestrel(options =>
                 {
-#if NETSTANDARD13
-                    if (_options.Certificate != null)
-                        options.UseHttps(_options.Certificate);
-#endif
-
-#if !NETSTANDARD13
                     if (_options.Certificate != null)
                         options.Listen(IPAddress.Any, _options.Port, listenOptions => { listenOptions.UseHttps(_options.Certificate); });
-#endif
                 })
                 .UseUrls($"http{(_options.Certificate != null ? "s" : "")}://{_options.Host}:{_options.Port}")
                 .ConfigureServices(services => { services.AddSingleton<IStartup>(new Startup(_registry, _options.MapPath)); })
@@ -100,7 +91,7 @@ namespace Prometheus.Client.MetricServer
         {
             private const string _contentType = "text/plain; version=0.0.4";
 
-            private readonly ICollectorRegistry _registry;
+            private ICollectorRegistry _registry;
             private readonly string _mapPath;
 
             public Startup(ICollectorRegistry registry, string mapPath)
@@ -121,6 +112,9 @@ namespace Prometheus.Client.MetricServer
 
             public void Configure(IApplicationBuilder app)
             {
+                _registry ??= (ICollectorRegistry)app.ApplicationServices.GetService(typeof(ICollectorRegistry))
+                           ?? Metrics.DefaultCollectorRegistry;
+
                 app.Map(_mapPath, coreapp =>
                 {
                     coreapp.Run(async context =>
