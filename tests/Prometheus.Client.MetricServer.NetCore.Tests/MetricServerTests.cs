@@ -10,7 +10,7 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
     public class MetricServerTests
     {
         private const int _port = 5050;
-        
+
         [Fact]
         public void Start_Stop_IsRunning()
         {
@@ -24,7 +24,6 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
         [Fact]
         public async Task Base_MapPath()
         {
- 
             var metricServer = new MetricServer(new CollectorRegistry(), new MetricServerOptions { Port = _port });
             metricServer.Start();
 
@@ -36,7 +35,7 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
 
             metricServer.Stop();
         }
-        
+
         [Fact]
         public async Task MapPath_WithEndSlash()
         {
@@ -53,7 +52,7 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
 
             metricServer.Stop();
         }
-        
+
         [Fact]
         public void Wrong_MapPath()
         {

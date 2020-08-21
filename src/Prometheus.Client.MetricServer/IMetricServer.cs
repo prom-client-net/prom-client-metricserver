@@ -14,7 +14,7 @@ namespace Prometheus.Client.MetricServer
         ///     Stop server
         /// </summary>
         void Stop();
-        
+
         /// <summary>
         ///     Server is Running?
         /// </summary>

@@ -27,7 +27,7 @@ namespace Prometheus.Client.MetricServer
             :this(null, options)
         {
         }
-        
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -60,7 +60,6 @@ namespace Prometheus.Client.MetricServer
             var configBuilder = new ConfigurationBuilder();
             configBuilder.Properties["parent"] = this;
             var config = configBuilder.Build();
-
 
             _host = new WebHostBuilder()
                 .UseConfiguration(config)
