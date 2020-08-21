@@ -5,7 +5,7 @@
     <AssemblyTitle>Prometheus.Client.MetricServer</AssemblyTitle>
     <VersionPrefix>4.0.0</VersionPrefix>
     <Authors>Serge K, Oleksandr Poliakov</Authors>
-    <TargetFrameworks>netstandard2.0;netcoreapp2.2;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netcoreapp2.2;netstandard2.1;netcoreapp3.1</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <AssemblyName>Prometheus.Client.MetricServer</AssemblyName>
     <PackageId>Prometheus.Client.MetricServer</PackageId>
@@ -29,6 +29,11 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Prometheus.Client" Version="4.1.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup  Condition="'$(TargetFramework)' != 'netcoreapp3.1'">
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="2.2.0" />
   </ItemGroup>
