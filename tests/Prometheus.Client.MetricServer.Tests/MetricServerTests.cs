@@ -4,12 +4,19 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Prometheus.Client.Collectors;
 using Xunit;
+using Xunit.Abstractions;
 
-namespace Prometheus.Client.MetricServer.NetCore.Tests
+namespace Prometheus.Client.MetricServer.Tests
 {
     public class MetricServerTests
     {
-        private const int _port = 5050;
+        private readonly ITestOutputHelper _testOutputHelper;
+        private const int _port = 5055;
+
+        public MetricServerTests(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+        }
 
         [Fact]
         public void Start_Stop_IsRunning()
@@ -25,15 +32,24 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
         public async Task Base_MapPath()
         {
             var metricServer = new MetricServer(new CollectorRegistry(), new MetricServerOptions { Port = _port });
-            metricServer.Start();
-
-            using (var httpClient = new HttpClient())
+            try
             {
+                metricServer.Start();
+                var counter = Metrics.DefaultFactory.CreateCounter("test_counter", "help");
+                counter.Inc();
+                using var httpClient = new HttpClient();
                 var response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
                 Assert.False(string.IsNullOrEmpty(response));
             }
-
-            metricServer.Stop();
+            catch (Exception ex)
+            {
+                _testOutputHelper.WriteLine(ex.ToString());
+                throw;
+            }
+            finally
+            {
+                metricServer.Stop();
+            }
         }
 
         [Fact]
@@ -42,15 +58,24 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
             var metricServer = new MetricServer(
                 new CollectorRegistry(),
                 new MetricServerOptions { Port = _port, MapPath = "/test" });
-            metricServer.Start();
-
-            using (var httpClient = new HttpClient())
+            try
             {
+                metricServer.Start();
+                var counter = Metrics.DefaultFactory.CreateCounter("test_counter", "help");
+                counter.Inc();
+                using var httpClient = new HttpClient();
                 var response = await httpClient.GetStringAsync($"http://localhost:{_port}/test/");
                 Assert.False(string.IsNullOrEmpty(response));
             }
-
-            metricServer.Stop();
+            catch (Exception ex)
+            {
+                _testOutputHelper.WriteLine(ex.ToString());
+                throw;
+            }
+            finally
+            {
+                metricServer.Stop();
+            }
         }
 
         [Fact]
@@ -70,52 +95,79 @@ namespace Prometheus.Client.MetricServer.NetCore.Tests
             var metricServer = new MetricServer(
                 new CollectorRegistry(),
                 new MetricServerOptions { Port = _port, MapPath = mapPath });
-            metricServer.Start();
-
-            using (var httpClient = new HttpClient())
+            try
             {
+                metricServer.Start();
+                var counter = Metrics.DefaultFactory.CreateCounter("test_counter", "help");
+                counter.Inc();
+                using var httpClient = new HttpClient();
                 var response = await httpClient.GetStringAsync($"http://localhost:{_port}" + mapPath);
                 Assert.False(string.IsNullOrEmpty(response));
             }
-
-            metricServer.Stop();
+            catch (Exception ex)
+            {
+                _testOutputHelper.WriteLine(ex.ToString());
+                throw;
+            }
+            finally
+            {
+                metricServer.Stop();
+            }
         }
 
         [Fact]
         public async Task FindMetric()
         {
             var registry = new CollectorRegistry();
-            var factory = new MetricFactory(registry);
+            var factory = new MetricFactory(new CollectorRegistry());
             var metricServer = new MetricServer(registry, new MetricServerOptions { Port = _port });
 
-            metricServer.Start();
-
-            const string metricName = "myCounter";
-            var counter = factory.CreateCounter(metricName, "helptext");
-            counter.Inc();
-
-            using (var httpClient = new HttpClient())
+            try
             {
+                metricServer.Start();
+
+                const string metricName = "myCounter";
+                var counter = factory.CreateCounter(metricName, "helptext");
+                counter.Inc();
+
+                using var httpClient = new HttpClient();
                 var response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
                 Assert.Contains(metricName, response);
             }
-
-            metricServer.Stop();
+            catch (Exception ex)
+            {
+                _testOutputHelper.WriteLine(ex.ToString());
+                throw;
+            }
+            finally
+            {
+                metricServer.Stop();
+            }
         }
 
         [Fact]
         public async Task Url_NotFound()
         {
             var metricServer = new MetricServer(new CollectorRegistry(), new MetricServerOptions { Port = _port });
-            metricServer.Start();
-
-            using (var httpClient = new HttpClient())
+            try
             {
+                metricServer.Start();
+                var counter = Metrics.DefaultFactory.CreateCounter("test_counter", "help");
+                counter.Inc();
+                using var httpClient = new HttpClient();
+
                 var response = await httpClient.GetAsync($"http://localhost:{_port}");
                 Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             }
-
-            metricServer.Stop();
+            catch (Exception ex)
+            {
+                _testOutputHelper.WriteLine(ex.ToString());
+                throw;
+            }
+            finally
+            {
+                metricServer.Stop();
+            }
         }
     }
 }
