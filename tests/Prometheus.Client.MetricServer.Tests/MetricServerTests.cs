@@ -11,7 +11,7 @@ namespace Prometheus.Client.MetricServer.Tests
     public class MetricServerTests
     {
         private readonly ITestOutputHelper _testOutputHelper;
-        private const int _port = 5055;
+        private const int _port = 9091;
 
         public MetricServerTests(ITestOutputHelper testOutputHelper)
         {
@@ -31,7 +31,7 @@ namespace Prometheus.Client.MetricServer.Tests
         [Fact]
         public async Task Base_MapPath()
         {
-            var metricServer = new MetricServer(new CollectorRegistry(), new MetricServerOptions { Port = _port });
+            var metricServer = new MetricServer(new MetricServerOptions { Port = _port});
             try
             {
                 metricServer.Start();
@@ -55,9 +55,7 @@ namespace Prometheus.Client.MetricServer.Tests
         [Fact]
         public async Task MapPath_WithEndSlash()
         {
-            var metricServer = new MetricServer(
-                new CollectorRegistry(),
-                new MetricServerOptions { Port = _port, MapPath = "/test" });
+            var metricServer = new MetricServer(new MetricServerOptions { Port = _port, MapPath = "/test" });
             try
             {
                 metricServer.Start();
@@ -92,9 +90,7 @@ namespace Prometheus.Client.MetricServer.Tests
         [InlineData("/metrics965")]
         public async Task MapPath(string mapPath)
         {
-            var metricServer = new MetricServer(
-                new CollectorRegistry(),
-                new MetricServerOptions { Port = _port, MapPath = mapPath });
+            var metricServer = new MetricServer(new MetricServerOptions { Port = _port, MapPath = mapPath });
             try
             {
                 metricServer.Start();
@@ -119,7 +115,7 @@ namespace Prometheus.Client.MetricServer.Tests
         public async Task FindMetric()
         {
             var registry = new CollectorRegistry();
-            var factory = new MetricFactory(new CollectorRegistry());
+            var factory = new MetricFactory(registry);
             var metricServer = new MetricServer(registry, new MetricServerOptions { Port = _port });
 
             try
