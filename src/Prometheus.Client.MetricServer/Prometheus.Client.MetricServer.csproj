@@ -3,9 +3,9 @@
     <Description>MetricServer for the Prometheus.Client</Description>
     <Copyright>2020 © Serge K, Oleksandr Poliakov</Copyright>
     <AssemblyTitle>Prometheus.Client.MetricServer</AssemblyTitle>
-    <VersionPrefix>4.0.1</VersionPrefix>
+    <VersionPrefix>4.1.0</VersionPrefix>
     <Authors>Serge K, Oleksandr Poliakov</Authors>
-    <TargetFrameworks>netstandard2.0;netcoreapp2.2;netstandard2.1;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;netcoreapp3.1</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <AssemblyName>Prometheus.Client.MetricServer</AssemblyName>
     <PackageId>Prometheus.Client.MetricServer</PackageId>
@@ -31,7 +31,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Prometheus.Client" Version="4.2.0" />
+    <PackageReference Include="Prometheus.Client" Version="4.3.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
