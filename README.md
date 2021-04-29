@@ -1,3 +1,7 @@
+[bmac]: https://www.buymeacoffee.com/phnx47
+[ko-fi]: https://ko-fi.com/phnx47
+[patreon]: https://www.patreon.com/phnx47
+
 # Prometheus.Client.MetricServer
 
 [![NuGet](https://img.shields.io/nuget/v/Prometheus.Client.MetricServer.svg)](https://www.nuget.org/packages/Prometheus.Client.MetricServer)
@@ -8,16 +12,19 @@
 
 Extension for [Prometheus.Client](https://github.com/PrometheusClientNet/Prometheus.Client)
 
-#### Installation:
+## Install
 
-    dotnet add package Prometheus.Client.MetricServer
+```sh
+dotnet add package Prometheus.Client.MetricServer
+``
 
-#### Quick start:
+## Use
 
 There are [Examples](https://github.com/PrometheusClientNet/Prometheus.Client.Examples/tree/master/MetricServer)
 
-```csharp
+Simple Console App with static MetricFactory:
 
+```c#
 static void Main(string[] args)
 {
     var options = new MetricServerOptions
@@ -39,11 +46,13 @@ static void Main(string[] args)
 
 ## Support
 
-I would also very much appreciate your support:
+If you like what I'm accomplishing, feel free to buy me a coffee
 
-<a href="https://www.buymeacoffee.com/phnx47"><img width="32px" src="https://raw.githubusercontent.com/phnx47/files/master/button-sponsors/bmac0.png" alt="Buy Me A Coffee"></a>
-<a href="https://ko-fi.com/phnx47"><img width="32px" src="https://raw.githubusercontent.com/phnx47/files/master/button-sponsors/kofi0.png" alt="Support me on ko-fi"></a>
-<a href="https://www.patreon.com/phnx47"><img width="32px" src="https://raw.githubusercontent.com/phnx47/files/master/button-sponsors/patreon0.png" alt="Support me on Patreon"></a>
+[<img align="left" alt="phnx47 | Buy Me a Coffe" width="32px" src="https://raw.githubusercontent.com/phnx47/files/master/button-sponsors/bmac0.png" />][bmac]
+[<img align="left" alt="phnx47 | Kofi" width="32px" src="https://raw.githubusercontent.com/phnx47/files/master/button-sponsors/kofi0.png" />][ko-fi]
+[<img align="left" alt="phnx47 | Patreon" width="32px" src="https://raw.githubusercontent.com/phnx47/files/master/button-sponsors/patreon0.png" />][patreon]
+
+<br />
 
 ## License
 
