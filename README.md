@@ -16,7 +16,7 @@ Extension for [Prometheus.Client](https://github.com/PrometheusClientNet/Prometh
 
 ```sh
 dotnet add package Prometheus.Client.MetricServer
-``
+```
 
 ## Use
 
