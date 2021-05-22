@@ -16,36 +16,54 @@ namespace Prometheus.Client.MetricServer
     public class MetricServer : IMetricServer
     {
         private readonly MetricServerOptions _options;
-        private readonly ICollectorRegistry _registry;
         private IWebHost _host;
 
         /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="options">Http server configuration options</param>
-        public MetricServer(MetricServerOptions options)
-            :this(null, options)
-        {
-        }
-
-        /// <summary>
-        /// Constructor
+        ///     Constructor
         /// </summary>
         /// <param name="registry">Collector registry </param>
         /// <param name="options">Http server configuration options</param>
+        [Obsolete("Use options.CollectorRegistryInstance for set CollectorRegistry")]
         public MetricServer(ICollectorRegistry registry, MetricServerOptions options)
         {
-            if (options == null)
-                throw new ArgumentNullException(nameof(options));
-
-            if (options.Port == 0)
-                throw new ArgumentException("Port should be specified");
+            options.CollectorRegistryInstance = registry;
 
             if (string.IsNullOrEmpty(options.MapPath) || !options.MapPath.StartsWith("/"))
                 throw new ArgumentException($"mapPath '{options.MapPath}' should start with '/'");
 
-            _registry = registry;
             _options = options;
+
+            _options.CollectorRegistryInstance ??= Metrics.DefaultCollectorRegistry;
+
+            if (_options.UseDefaultCollectors)
+                _options.CollectorRegistryInstance.UseDefaultCollectors();
+        }
+
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        public MetricServer()
+            : this(new MetricServerOptions())
+        {
+        }
+
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        public MetricServer(MetricServerOptions options)
+        {
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
+
+            if (string.IsNullOrEmpty(options.MapPath) || !options.MapPath.StartsWith("/"))
+                throw new ArgumentException($"mapPath '{options.MapPath}' should start with '/'");
+
+            _options = options;
+
+            _options.CollectorRegistryInstance ??= Metrics.DefaultCollectorRegistry;
+
+            if (_options.UseDefaultCollectors)
+                _options.CollectorRegistryInstance.UseDefaultCollectors();
         }
 
         /// <inheritdoc />
@@ -69,7 +87,7 @@ namespace Prometheus.Client.MetricServer
                         options.Listen(IPAddress.Any, _options.Port, listenOptions => { listenOptions.UseHttps(_options.Certificate); });
                 })
                 .UseUrls($"http{(_options.Certificate != null ? "s" : "")}://{_options.Host}:{_options.Port}")
-                .ConfigureServices(services => { services.AddSingleton<IStartup>(new Startup(_registry, _options.MapPath)); })
+                .ConfigureServices(services => { services.AddSingleton<IStartup>(new Startup(_options.CollectorRegistryInstance, _options.MapPath)); })
                 .UseSetting(WebHostDefaults.ApplicationKey, typeof(Startup).GetTypeInfo().Assembly.FullName)
                 .Build();
 
@@ -89,9 +107,9 @@ namespace Prometheus.Client.MetricServer
         internal class Startup : IStartup
         {
             private const string _contentType = "text/plain; version=0.0.4";
-
-            private ICollectorRegistry _registry;
             private readonly string _mapPath;
+
+            private readonly ICollectorRegistry _registry;
 
             public Startup(ICollectorRegistry registry, string mapPath)
             {
@@ -111,9 +129,6 @@ namespace Prometheus.Client.MetricServer
 
             public void Configure(IApplicationBuilder app)
             {
-                _registry ??= (ICollectorRegistry)app.ApplicationServices.GetService(typeof(ICollectorRegistry))
-                           ?? Metrics.DefaultCollectorRegistry;
-
                 app.Map(_mapPath, coreapp =>
                 {
                     coreapp.Run(async context =>
@@ -121,10 +136,8 @@ namespace Prometheus.Client.MetricServer
                         var response = context.Response;
                         response.ContentType = _contentType;
 
-                        using (var outputStream = response.Body)
-                        {
-                            await ScrapeHandler.ProcessAsync(_registry, outputStream);
-                        }
+                        using var outputStream = response.Body;
+                        await ScrapeHandler.ProcessAsync(_registry, outputStream);
                     });
                 });
             }

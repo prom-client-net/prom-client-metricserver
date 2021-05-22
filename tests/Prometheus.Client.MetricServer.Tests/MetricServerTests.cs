@@ -19,7 +19,7 @@ namespace Prometheus.Client.MetricServer.Tests
         }
 
         [Fact]
-        public void Start_Stop_IsRunning()
+        public void Start_Stop_LegacyConstructor_IsRunning()
         {
             var metricServer = new MetricServer(new CollectorRegistry(), new MetricServerOptions { Port = _port });
             metricServer.Start();
@@ -29,16 +29,26 @@ namespace Prometheus.Client.MetricServer.Tests
         }
 
         [Fact]
+        public void Start_Stop_DefaultPort_IsRunning()
+        {
+            var metricServer = new MetricServer();
+            metricServer.Start();
+            Assert.True(metricServer.IsRunning);
+            metricServer.Stop();
+            Assert.False(metricServer.IsRunning);
+        }
+
+        [Fact]
         public async Task Base_MapPath()
         {
-            var metricServer = new MetricServer(new MetricServerOptions { Port = _port});
+            var metricServer = new MetricServer(new MetricServerOptions { Port = _port });
             try
             {
                 metricServer.Start();
                 var counter = Metrics.DefaultFactory.CreateCounter("test_counter", "help");
                 counter.Inc();
                 using var httpClient = new HttpClient();
-                var response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
+                string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
                 Assert.False(string.IsNullOrEmpty(response));
             }
             catch (Exception ex)
@@ -62,7 +72,7 @@ namespace Prometheus.Client.MetricServer.Tests
                 var counter = Metrics.DefaultFactory.CreateCounter("test_counter", "help");
                 counter.Inc();
                 using var httpClient = new HttpClient();
-                var response = await httpClient.GetStringAsync($"http://localhost:{_port}/test/");
+                string response = await httpClient.GetStringAsync($"http://localhost:{_port}/test/");
                 Assert.False(string.IsNullOrEmpty(response));
             }
             catch (Exception ex)
@@ -80,7 +90,6 @@ namespace Prometheus.Client.MetricServer.Tests
         public void Wrong_MapPath()
         {
             Assert.Throws<ArgumentException>(() => new MetricServer(
-                new CollectorRegistry(),
                 new MetricServerOptions { Port = _port, MapPath = "temp" }));
         }
 
@@ -97,7 +106,7 @@ namespace Prometheus.Client.MetricServer.Tests
                 var counter = Metrics.DefaultFactory.CreateCounter("test_counter", "help");
                 counter.Inc();
                 using var httpClient = new HttpClient();
-                var response = await httpClient.GetStringAsync($"http://localhost:{_port}" + mapPath);
+                string response = await httpClient.GetStringAsync($"http://localhost:{_port}" + mapPath);
                 Assert.False(string.IsNullOrEmpty(response));
             }
             catch (Exception ex)
@@ -112,11 +121,11 @@ namespace Prometheus.Client.MetricServer.Tests
         }
 
         [Fact]
-        public async Task FindMetric()
+        public async Task Find_Metric()
         {
             var registry = new CollectorRegistry();
             var factory = new MetricFactory(registry);
-            var metricServer = new MetricServer(registry, new MetricServerOptions { Port = _port });
+            var metricServer = new MetricServer(new MetricServerOptions { Port = _port, CollectorRegistryInstance = registry});
 
             try
             {
@@ -127,7 +136,7 @@ namespace Prometheus.Client.MetricServer.Tests
                 counter.Inc();
 
                 using var httpClient = new HttpClient();
-                var response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
+                string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
                 Assert.Contains(metricName, response);
             }
             catch (Exception ex)
@@ -144,7 +153,7 @@ namespace Prometheus.Client.MetricServer.Tests
         [Fact]
         public async Task Url_NotFound()
         {
-            var metricServer = new MetricServer(new CollectorRegistry(), new MetricServerOptions { Port = _port });
+            var metricServer = new MetricServer(new MetricServerOptions { Port = _port });
             try
             {
                 metricServer.Start();
@@ -154,6 +163,37 @@ namespace Prometheus.Client.MetricServer.Tests
 
                 var response = await httpClient.GetAsync($"http://localhost:{_port}");
                 Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            }
+            catch (Exception ex)
+            {
+                _testOutputHelper.WriteLine(ex.ToString());
+                throw;
+            }
+            finally
+            {
+                metricServer.Stop();
+            }
+        }
+
+        [Fact]
+        public async Task Find_Default_Metric()
+        {
+            var registry = new CollectorRegistry();
+            var metricServer = new MetricServer(new MetricServerOptions
+            {
+                Port = _port,
+                CollectorRegistryInstance = registry,
+                UseDefaultCollectors = true
+            });
+
+            try
+            {
+                metricServer.Start();
+
+                using var httpClient = new HttpClient();
+                string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
+                Assert.Contains("dotnet_collection_count_total", response);
+                Assert.Contains("process_cpu_seconds_total", response);
             }
             catch (Exception ex)
             {
