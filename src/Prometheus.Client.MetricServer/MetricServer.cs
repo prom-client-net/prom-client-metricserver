@@ -44,7 +44,7 @@ namespace Prometheus.Client.MetricServer
             if (string.IsNullOrEmpty(options.MapPath) || !options.MapPath.StartsWith("/"))
                 throw new ArgumentException($"mapPath '{options.MapPath}' should start with '/'");
 
-            _registry = registry;
+            _registry = registry ?? Metrics.DefaultCollectorRegistry;
             _options = options;
         }
 
@@ -90,7 +90,7 @@ namespace Prometheus.Client.MetricServer
         {
             private const string _contentType = "text/plain; version=0.0.4";
 
-            private ICollectorRegistry _registry;
+            private readonly ICollectorRegistry _registry;
             private readonly string _mapPath;
 
             public Startup(ICollectorRegistry registry, string mapPath)
@@ -111,9 +111,6 @@ namespace Prometheus.Client.MetricServer
 
             public void Configure(IApplicationBuilder app)
             {
-                _registry ??= (ICollectorRegistry)app.ApplicationServices.GetService(typeof(ICollectorRegistry))
-                           ?? Metrics.DefaultCollectorRegistry;
-
                 app.Map(_mapPath, coreapp =>
                 {
                     coreapp.Run(async context =>
