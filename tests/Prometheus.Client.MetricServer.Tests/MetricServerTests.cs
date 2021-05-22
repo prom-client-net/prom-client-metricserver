@@ -31,14 +31,14 @@ namespace Prometheus.Client.MetricServer.Tests
         [Fact]
         public async Task Base_MapPath()
         {
-            var metricServer = new MetricServer(new MetricServerOptions { Port = _port});
+            var metricServer = new MetricServer(new MetricServerOptions { Port = _port });
             try
             {
                 metricServer.Start();
                 var counter = Metrics.DefaultFactory.CreateCounter("test_counter", "help");
                 counter.Inc();
                 using var httpClient = new HttpClient();
-                var response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
+                string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
                 Assert.False(string.IsNullOrEmpty(response));
             }
             catch (Exception ex)
@@ -62,7 +62,7 @@ namespace Prometheus.Client.MetricServer.Tests
                 var counter = Metrics.DefaultFactory.CreateCounter("test_counter", "help");
                 counter.Inc();
                 using var httpClient = new HttpClient();
-                var response = await httpClient.GetStringAsync($"http://localhost:{_port}/test/");
+                string response = await httpClient.GetStringAsync($"http://localhost:{_port}/test/");
                 Assert.False(string.IsNullOrEmpty(response));
             }
             catch (Exception ex)
@@ -97,7 +97,7 @@ namespace Prometheus.Client.MetricServer.Tests
                 var counter = Metrics.DefaultFactory.CreateCounter("test_counter", "help");
                 counter.Inc();
                 using var httpClient = new HttpClient();
-                var response = await httpClient.GetStringAsync($"http://localhost:{_port}" + mapPath);
+                string response = await httpClient.GetStringAsync($"http://localhost:{_port}" + mapPath);
                 Assert.False(string.IsNullOrEmpty(response));
             }
             catch (Exception ex)
@@ -127,7 +127,7 @@ namespace Prometheus.Client.MetricServer.Tests
                 counter.Inc();
 
                 using var httpClient = new HttpClient();
-                var response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
+                string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
                 Assert.Contains(metricName, response);
             }
             catch (Exception ex)

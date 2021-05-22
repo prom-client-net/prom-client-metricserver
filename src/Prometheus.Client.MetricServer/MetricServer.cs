@@ -20,16 +20,16 @@ namespace Prometheus.Client.MetricServer
         private IWebHost _host;
 
         /// <summary>
-        /// Constructor
+        ///     Constructor
         /// </summary>
         /// <param name="options">Http server configuration options</param>
         public MetricServer(MetricServerOptions options)
-            :this(null, options)
+            : this(null, options)
         {
         }
 
         /// <summary>
-        /// Constructor
+        ///     Constructor
         /// </summary>
         /// <param name="registry">Collector registry </param>
         /// <param name="options">Http server configuration options</param>
@@ -89,9 +89,9 @@ namespace Prometheus.Client.MetricServer
         internal class Startup : IStartup
         {
             private const string _contentType = "text/plain; version=0.0.4";
+            private readonly string _mapPath;
 
             private readonly ICollectorRegistry _registry;
-            private readonly string _mapPath;
 
             public Startup(ICollectorRegistry registry, string mapPath)
             {
@@ -118,10 +118,8 @@ namespace Prometheus.Client.MetricServer
                         var response = context.Response;
                         response.ContentType = _contentType;
 
-                        using (var outputStream = response.Body)
-                        {
-                            await ScrapeHandler.ProcessAsync(_registry, outputStream);
-                        }
+                        using var outputStream = response.Body;
+                        await ScrapeHandler.ProcessAsync(_registry, outputStream);
                     });
                 });
             }
