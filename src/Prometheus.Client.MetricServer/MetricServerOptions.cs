@@ -29,12 +29,12 @@ namespace Prometheus.Client.MetricServer
         public X509Certificate2 Certificate { get; set; }
 
         /// <summary>
-        ///     Collector Registry instance.
+        ///     Collector Registry instance
         /// </summary>
         public ICollectorRegistry CollectorRegistryInstance { get; set; }
 
         /// <summary>
-        ///     Use default collectors
+        ///     Use default collectors(dotnet and process stats)
         /// </summary>
         public bool UseDefaultCollectors { get; set; } = false;
     }
