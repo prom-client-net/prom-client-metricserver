@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>MetricServer for the Prometheus.Client</Description>
+    <Description>Standalone Kestrel server for the Prometheus.Client</Description>
     <Copyright>2020 © Serge K, Oleksandr Poliakov</Copyright>
     <AssemblyTitle>Prometheus.Client.MetricServer</AssemblyTitle>
     <VersionPrefix>4.2.0</VersionPrefix>
