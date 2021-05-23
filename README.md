@@ -2,7 +2,7 @@
 [ko-fi]: https://ko-fi.com/phnx47
 [patreon]: https://www.patreon.com/phnx47
 
-# Prometheus.Client.MetricServer
+# Prometheus. Client. MetricServer
 
 [![NuGet](https://img.shields.io/nuget/v/Prometheus.Client.MetricServer.svg)](https://www.nuget.org/packages/Prometheus.Client.MetricServer)
 [![NuGet](https://img.shields.io/nuget/dt/Prometheus.Client.MetricServer.svg)](https://www.nuget.org/packages/Prometheus.Client.MetricServer)
@@ -10,7 +10,7 @@
 [![Gitter](https://img.shields.io/gitter/room/PrometheusClientNet/community.svg)](https://gitter.im/PrometheusClientNet/community)
 [![License MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-Extension for [Prometheus.Client](https://github.com/PrometheusClientNet/Prometheus.Client)
+Extension for [Prometheus. Client](https://github.com/PrometheusClientNet/Prometheus.Client)
 
 ## Install
 
@@ -20,13 +20,14 @@ dotnet add package Prometheus.Client.MetricServer
 
 ## Use
 
-There are [Examples](https://github.com/PrometheusClientNet/Prometheus.Client.Examples/tree/master/MetricServer)
+There are [Examples](https://github.com/prom-client-net/Prometheus.Client.Examples/tree/master/MetricServer)
 
 Simple Console App with static MetricFactory:
 
 ```c#
-static void Main(string[] args)
+public static void Main(string[] args)
 {
+
     var options = new MetricServerOptions
     {
         Port = 9091                
@@ -41,7 +42,46 @@ static void Main(string[] args)
     ...     
     
     metricServer.Stop();
+
 }
+
+```
+
+Worker with DI [extension](https://github.com/prom-client-net/Prometheus.Client.DependencyInjection):
+
+```c#
+public static async Task Main(string[] args)
+{
+    var host = Host.CreateDefaultBuilder(args)
+        .ConfigureServices((_, services) =>
+        {
+            services.AddMetricFactory();
+            services.AddSingleton<IMetricServer>(sp => new MetricServer(
+                new MetricServerOptions
+                {
+                    CollectorRegistryInstance = sp.GetRequiredService<ICollectorRegistry>(),
+                    UseDefaultCollectors = true
+                }));
+            services.AddHostedService<Worker>();
+        }).Build();
+
+    var metricServer = host.Services.GetRequiredService<IMetricServer>();
+
+    try
+    {
+        metricServer.Start();
+        await host.RunAsync();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Host Terminated Unexpectedly");
+    }
+    finally
+    {
+        metricServer.Stop();
+    }
+}
+
 ```
 
 ## Support
