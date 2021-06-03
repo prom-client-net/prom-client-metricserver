@@ -212,7 +212,7 @@ namespace Prometheus.Client.MetricServer.Tests
                 metricServer.Start();
 
                 const string help = "русский хелп";
-                var counter = Metrics.DefaultFactory.CreateCounter("test_counter", help);
+                var counter = Metrics.DefaultFactory.CreateCounter("test_counter_rus", help);
                 counter.Inc();
 
                 using var httpClient = new HttpClient();
