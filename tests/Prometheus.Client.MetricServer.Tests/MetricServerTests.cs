@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Prometheus.Client.Collectors;
 using Xunit;
@@ -125,7 +126,7 @@ namespace Prometheus.Client.MetricServer.Tests
         {
             var registry = new CollectorRegistry();
             var factory = new MetricFactory(registry);
-            var metricServer = new MetricServer(new MetricServerOptions { Port = _port, CollectorRegistryInstance = registry});
+            var metricServer = new MetricServer(new MetricServerOptions { Port = _port, CollectorRegistryInstance = registry });
 
             try
             {
@@ -179,12 +180,7 @@ namespace Prometheus.Client.MetricServer.Tests
         public async Task Find_Default_Metric()
         {
             var registry = new CollectorRegistry();
-            var metricServer = new MetricServer(new MetricServerOptions
-            {
-                Port = _port,
-                CollectorRegistryInstance = registry,
-                UseDefaultCollectors = true
-            });
+            var metricServer = new MetricServer(new MetricServerOptions { Port = _port, CollectorRegistryInstance = registry, UseDefaultCollectors = true });
 
             try
             {
@@ -194,6 +190,34 @@ namespace Prometheus.Client.MetricServer.Tests
                 string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
                 Assert.Contains("dotnet_collection_count_total", response);
                 Assert.Contains("process_cpu_seconds_total", response);
+            }
+            catch (Exception ex)
+            {
+                _testOutputHelper.WriteLine(ex.ToString());
+                throw;
+            }
+            finally
+            {
+                metricServer.Stop();
+            }
+        }
+
+        [Fact]
+        public async Task Add_Encoding()
+        {
+            var metricServer = new MetricServer(new MetricServerOptions { Port = _port, ResponseEncoding = Encoding.UTF8 });
+
+            try
+            {
+                metricServer.Start();
+
+                const string help = "русский хелп";
+                var counter = Metrics.DefaultFactory.CreateCounter("test_counter", help);
+                counter.Inc();
+
+                using var httpClient = new HttpClient();
+                string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
+                Assert.Contains(help, response);
             }
             catch (Exception ex)
             {

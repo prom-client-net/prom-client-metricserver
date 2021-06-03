@@ -1,4 +1,5 @@
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Prometheus.Client.Collectors;
 
 namespace Prometheus.Client.MetricServer
@@ -37,5 +38,10 @@ namespace Prometheus.Client.MetricServer
         ///     Use default collectors(dotnet and process stats)
         /// </summary>
         public bool UseDefaultCollectors { get; set; } = false;
+
+        /// <summary>
+        ///     Charset of text response.
+        /// </summary>
+        public Encoding ResponseEncoding { get; set; }
     }
 }

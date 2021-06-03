@@ -87,7 +87,7 @@ namespace Prometheus.Client.MetricServer
                         options.Listen(IPAddress.Any, _options.Port, listenOptions => { listenOptions.UseHttps(_options.Certificate); });
                 })
                 .UseUrls($"http{(_options.Certificate != null ? "s" : "")}://{_options.Host}:{_options.Port}")
-                .ConfigureServices(services => { services.AddSingleton<IStartup>(new Startup(_options.CollectorRegistryInstance, _options.MapPath)); })
+                .ConfigureServices(services => { services.AddSingleton<IStartup>(new Startup(_options)); })
                 .UseSetting(WebHostDefaults.ApplicationKey, typeof(Startup).GetTypeInfo().Assembly.FullName)
                 .Build();
 
@@ -106,15 +106,11 @@ namespace Prometheus.Client.MetricServer
 
         internal class Startup : IStartup
         {
-            private const string _contentType = "text/plain; version=0.0.4";
-            private readonly string _mapPath;
+            private readonly MetricServerOptions _options;
 
-            private readonly ICollectorRegistry _registry;
-
-            public Startup(ICollectorRegistry registry, string mapPath)
+            public Startup(MetricServerOptions options)
             {
-                _registry = registry;
-                _mapPath = mapPath;
+                _options = options;
 
                 var builder = new ConfigurationBuilder();
                 Configuration = builder.Build();
@@ -129,15 +125,20 @@ namespace Prometheus.Client.MetricServer
 
             public void Configure(IApplicationBuilder app)
             {
-                app.Map(_mapPath, coreapp =>
+                var contentType = "text/plain; version=0.0.4";
+
+                if (_options.ResponseEncoding != null)
+                    contentType += $"; charset={_options.ResponseEncoding.BodyName}";
+
+                app.Map(_options.MapPath, coreapp =>
                 {
                     coreapp.Run(async context =>
                     {
                         var response = context.Response;
-                        response.ContentType = _contentType;
+                        response.ContentType = contentType;
 
                         using var outputStream = response.Body;
-                        await ScrapeHandler.ProcessAsync(_registry, outputStream);
+                        await ScrapeHandler.ProcessAsync(_options.CollectorRegistryInstance, outputStream);
                     });
                 });
             }
