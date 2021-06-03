@@ -3,9 +3,7 @@ name: 💿 CI Master
 on:
   push:
     branches:
-      - 'master'
-    tags:
-      - '!refs/tags/*'
+      - "master"
 
 jobs:
   build-dev:
