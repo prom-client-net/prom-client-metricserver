@@ -10,7 +10,7 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/prom-client-net/prom-client-metricserver/badge)](https://www.codefactor.io/repository/github/prom-client-net/prom-client-metricserver)
 [![License MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-Extension for [Prometheus. Client](https://github.com/prom-client-net/prom-client)
+Extension for [Prometheus.Client](https://github.com/prom-client-net/prom-client)
 
 ## Install
 
