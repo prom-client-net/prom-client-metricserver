@@ -1,4 +1,5 @@
-﻿*.user
+*.user
+*.opencover.xml
 
 .vs
 .vscode
@@ -6,3 +7,4 @@
 
 bin
 obj
+BenchmarkDotNet.Artifacts
