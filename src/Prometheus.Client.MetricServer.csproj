@@ -3,30 +3,16 @@
     <Description>Standalone Kestrel server for the Prometheus.Client</Description>
     <VersionPrefix>4.3.1</VersionPrefix>
     <TargetFrameworks>netstandard2.0;netstandard2.1;netcoreapp3.1;net5.0</TargetFrameworks>
-    <AssemblyName>Prometheus.Client.MetricServer</AssemblyName>
     <PackageId>Prometheus.Client.MetricServer</PackageId>
-    <PackageTags>prometheus;metrics</PackageTags>
-    <PackageIcon>icon.png</PackageIcon>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/prom-client-net/prom-client-metricserver</RepositoryUrl>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>../../Prometheus.Client.MetricServer.snk</AssemblyOriginatorKeyFile>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <AssemblyOriginatorKeyFile>../Prometheus.Client.MetricServer.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="../../icon.png">
-      <Pack>true</Pack>
-      <Visible>false</Visible>
-      <PackagePath></PackagePath>
-    </None>
+    <None Include="../icon.png" Visible="false" Pack="true" PackagePath="" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Prometheus.Client" Version="[4.4.0,5.0.0)" />
+    <PackageReference Include="Prometheus.Client" Version="[4.5.3,5.0.0)" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1' OR '$(TargetFramework)' == 'net5.0'">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
