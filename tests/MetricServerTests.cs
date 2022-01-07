@@ -22,7 +22,11 @@ namespace Prometheus.Client.MetricServer.Tests
         [Fact]
         public void Start_Stop_LegacyConstructor_IsRunning()
         {
-            var metricServer = new MetricServer(new CollectorRegistry(), new MetricServerOptions { Port = _port });
+            var metricServer = new MetricServer(new MetricServerOptions
+            {
+                Port = _port,
+                CollectorRegistryInstance = new CollectorRegistry()
+            });
             metricServer.Start();
             Assert.True(metricServer.IsRunning);
             metricServer.Stop();
