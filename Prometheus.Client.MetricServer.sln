@@ -31,6 +31,7 @@ ProjectSection(SolutionItems) = preProject
 	.github\workflows\pr.yml = .github\workflows\pr.yml
 	.github\workflows\master.yml = .github\workflows\master.yml
 	.github\workflows\prod.yml = .github\workflows\prod.yml
+	.github\workflows\ci.yml = .github\workflows\ci.yml
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prometheus.Client.MetricServer", "src\Prometheus.Client.MetricServer.csproj", "{62E44DB5-72EE-46E1-AF9D-4654A618A90A}"
