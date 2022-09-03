@@ -42,7 +42,14 @@ namespace Prometheus.Client.MetricServer
             _options.CollectorRegistryInstance ??= Metrics.DefaultCollectorRegistry;
 
             if (_options.UseDefaultCollectors)
-                _options.CollectorRegistryInstance.UseDefaultCollectors();
+            {
+#pragma warning disable CS0618
+                if (options.AddLegacyMetrics)
+                    options.CollectorRegistryInstance.UseDefaultCollectors(options.MetricPrefixName, options.AddLegacyMetrics);
+                else
+                    options.CollectorRegistryInstance.UseDefaultCollectors(options.MetricPrefixName);
+#pragma warning restore CS0618
+            }
         }
 
         /// <inheritdoc />
