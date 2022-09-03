@@ -2,7 +2,7 @@
 
 [![NuGet](https://img.shields.io/nuget/v/Prometheus.Client.MetricServer.svg)](https://www.nuget.org/packages/Prometheus.Client.MetricServer)
 [![NuGet](https://img.shields.io/nuget/dt/Prometheus.Client.MetricServer.svg)](https://www.nuget.org/packages/Prometheus.Client.MetricServer)
-[![CI](https://img.shields.io/github/workflow/status/prom-client-net/prom-client-metricserver/%F0%9F%92%BF%20CI%20Master?label=CI&logo=github)](https://github.com/prom-client-net/prom-client-metricserver/actions/workflows/master.yml)
+[![CI](https://img.shields.io/github/workflow/status/prom-client-net/prom-client-metricserver/%F0%9F%92%BF%20CI?label=CI&logo=github)](https://github.com/prom-client-net/prom-client-metricserver/actions/workflows/ci.yml)
 [![CodeFactor](https://www.codefactor.io/repository/github/prom-client-net/prom-client-metricserver/badge)](https://www.codefactor.io/repository/github/prom-client-net/prom-client-metricserver)
 [![License MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
@@ -16,7 +16,7 @@ dotnet add package Prometheus.Client.MetricServer
 
 ## Use
 
-There are [Examples](https://github.com/prom-client-net/prom-examples/tree/master/MetricServer)
+There are [Examples](https://github.com/prom-client-net/prom-examples)
 
 Simple Console App with static MetricFactory:
 
