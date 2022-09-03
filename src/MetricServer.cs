@@ -21,27 +21,6 @@ namespace Prometheus.Client.MetricServer
         /// <summary>
         ///     Constructor
         /// </summary>
-        /// <param name="registry">Collector registry </param>
-        /// <param name="options">Http server configuration options</param>
-        [Obsolete("Use options.CollectorRegistryInstance for set CollectorRegistry")]
-        public MetricServer(ICollectorRegistry registry, MetricServerOptions options)
-        {
-            options.CollectorRegistryInstance = registry;
-
-            if (string.IsNullOrEmpty(options.MapPath) || !options.MapPath.StartsWith("/"))
-                throw new ArgumentException($"mapPath '{options.MapPath}' should start with '/'");
-
-            _options = options;
-
-            _options.CollectorRegistryInstance ??= Metrics.DefaultCollectorRegistry;
-
-            if (_options.UseDefaultCollectors)
-                _options.CollectorRegistryInstance.UseDefaultCollectors();
-        }
-
-        /// <summary>
-        ///     Constructor
-        /// </summary>
         public MetricServer()
             : this(new MetricServerOptions())
         {
