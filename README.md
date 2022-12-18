@@ -3,7 +3,7 @@
 [![ci](https://img.shields.io/github/actions/workflow/status/prom-client-net/prom-client-metricserver/ci.yml?branch=main&label=ci&logo=github&style=flat-square)](https://github.com/prom-client-net/prom-client-metricserver/actions/workflows/ci.yml)
 [![nuget](https://img.shields.io/nuget/v/Prometheus.Client.MetricServer?logo=nuget&style=flat-square)](https://www.nuget.org/packages/Prometheus.Client.MetricServer)
 [![nuget](https://img.shields.io/nuget/dt/Prometheus.Client.MetricServer?logo=nuget&style=flat-square)](https://www.nuget.org/packages/Prometheus.Client.MetricServer)
-[![codecov](https://img.shields.io/codecov/c/github/prom-client-net/prom-client-metricserver?logo=codecov&style=flat-square&token=eSIF85pzB2)](https://app.codecov.io/gh/prom-client-net/prom-client-metricserver)
+[![codecov](https://img.shields.io/codecov/c/github/prom-client-net/prom-client-metricserver?logo=codecov&style=flat-square)](https://app.codecov.io/gh/prom-client-net/prom-client-metricserver)
 [![codefactor](https://img.shields.io/codefactor/grade/github/prom-client-net/prom-client-metricserver?logo=codefactor&style=flat-square)](https://www.codefactor.io/repository/github/prom-client-net/prom-client-metricserver)
 [![license](https://img.shields.io/github/license/prom-client-net/prom-client-metricserver?style=flat-square)](https://github.com/prom-client-net/prom-client-metricserver/blob/main/LICENSE)
 
