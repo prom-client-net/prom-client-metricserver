@@ -24,13 +24,11 @@ ProjectSection(SolutionItems) = preProject
 	.github\CODEOWNERS = .github\CODEOWNERS
 	.github\FUNDING.yml = .github\FUNDING.yml
 	.github\renovate.json = .github\renovate.json
+	.github\settings.yml = .github\settings.yml
 EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "worflows", "worflows", "{79B1C328-9B24-4C34-929A-E2856DC5586D}"
 ProjectSection(SolutionItems) = preProject
-	.github\workflows\pr.yml = .github\workflows\pr.yml
-	.github\workflows\master.yml = .github\workflows\master.yml
-	.github\workflows\prod.yml = .github\workflows\prod.yml
 	.github\workflows\ci.yml = .github\workflows\ci.yml
 EndProjectSection
 EndProject
