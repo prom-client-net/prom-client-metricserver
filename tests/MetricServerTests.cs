@@ -26,6 +26,12 @@ public class MetricServerTests
     }
 
     [Fact]
+    public void Null_Options_Throws_ArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => new MetricServer(null));
+    }
+
+    [Fact]
     public void Start_Stop_IsRunning()
     {
         _metricServer.Start();
@@ -33,6 +39,7 @@ public class MetricServerTests
         _metricServer.Stop();
         Assert.False(_metricServer.IsRunning);
     }
+
 
     [Fact]
     public void Start_DoubleStop_IsRunning()
@@ -57,7 +64,7 @@ public class MetricServerTests
     }
 
     [Fact]
-    public void Start_Stop_DefaultPort_IsRunning()
+    public void Start_Stop_WithDefaultPort_IsRunning()
     {
         _metricServer = new MetricServer(new MetricServerOptions { CollectorRegistryInstance = new CollectorRegistry() });
         _metricServer.Start();
@@ -66,8 +73,19 @@ public class MetricServerTests
         Assert.False(_metricServer.IsRunning);
     }
 
+
     [Fact]
-    public async Task Base_MapPath()
+    public void Start_Stop_WithDefaultRegisry_IsRunning()
+    {
+        _metricServer = new MetricServer();
+        _metricServer.Start();
+        Assert.True(_metricServer.IsRunning);
+        _metricServer.Stop();
+        Assert.False(_metricServer.IsRunning);
+    }
+
+    [Fact]
+    public async Task BaseMapPath_FindMetrics()
     {
         try
         {
@@ -77,6 +95,8 @@ public class MetricServerTests
             using var httpClient = new HttpClient();
             string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
             Assert.False(string.IsNullOrEmpty(response));
+            Assert.Contains("process_private_memory_bytes", response);
+            Assert.Contains("dotnet_total_memory_bytes", response);
         }
         catch (Exception ex)
         {
@@ -90,7 +110,7 @@ public class MetricServerTests
     }
 
     [Fact]
-    public async Task MapPath_WithEndSlash()
+    public async Task SetMapPath_FindMetricsWithEndSlash()
     {
         _metricServer = new MetricServer(new MetricServerOptions { Port = _port, CollectorRegistryInstance = new CollectorRegistry(), MapPath = "/test" });
         try
@@ -101,6 +121,8 @@ public class MetricServerTests
             using var httpClient = new HttpClient();
             string response = await httpClient.GetStringAsync($"http://localhost:{_port}/test/");
             Assert.False(string.IsNullOrEmpty(response));
+            Assert.Contains("process_private_memory_bytes", response);
+            Assert.Contains("dotnet_total_memory_bytes", response);
         }
         catch (Exception ex)
         {
@@ -114,20 +136,23 @@ public class MetricServerTests
     }
 
     [Theory]
+    [InlineData("metrics")]
     [InlineData("/metrics")]
-    [InlineData("/metrics12")]
+    [InlineData("metrics12")]
     [InlineData("/metrics965")]
-    public async Task MapPath(string mapPath)
+    public async Task SetMapPath_FindMetrics(string mapPath)
     {
-        _metricServer= new MetricServer(new MetricServerOptions { Port = _port, CollectorRegistryInstance = new CollectorRegistry(), MapPath = mapPath });
+        _metricServer = new MetricServer(new MetricServerOptions { Port = _port, CollectorRegistryInstance = new CollectorRegistry(), MapPath = mapPath });
         try
         {
             _metricServer.Start();
-            var counter = Metrics.DefaultFactory.CreateCounter("test_counter", "help");
-            counter.Inc();
             using var httpClient = new HttpClient();
+            if (!mapPath.StartsWith("/"))
+                mapPath = "/" + mapPath;
             string response = await httpClient.GetStringAsync($"http://localhost:{_port}" + mapPath);
             Assert.False(string.IsNullOrEmpty(response));
+            Assert.Contains("process_private_memory_bytes", response);
+            Assert.Contains("dotnet_total_memory_bytes", response);
         }
         catch (Exception ex)
         {
@@ -141,7 +166,7 @@ public class MetricServerTests
     }
 
     [Fact]
-    public async Task Custom_Find_Metric()
+    public async Task CustomCounter_FindMetric()
     {
         var registry = new CollectorRegistry();
         var factory = new MetricFactory(registry);
@@ -171,7 +196,7 @@ public class MetricServerTests
     }
 
     [Fact]
-    public async Task AddLegacyMetrics_False_CheckMetrics()
+    public async Task AddLegacyMetrics_False_FindMetrics()
     {
         try
         {
@@ -195,7 +220,7 @@ public class MetricServerTests
     }
 
     [Fact]
-    public async Task AddLegacyMetrics_True_CheckMetrics()
+    public async Task AddLegacyMetrics_True_FindMetrics()
     {
         _metricServer = new MetricServer(new MetricServerOptions { Port = _port, CollectorRegistryInstance = new CollectorRegistry(), AddLegacyMetrics = true });
 
@@ -221,7 +246,7 @@ public class MetricServerTests
     }
 
     [Fact]
-    public async Task Url_NotFound()
+    public async Task WrongUrl_NotFound()
     {
         try
         {
@@ -230,7 +255,7 @@ public class MetricServerTests
             counter.Inc();
             using var httpClient = new HttpClient();
 
-            var response = await httpClient.GetAsync($"http://localhost:{_port}");
+            var response = await httpClient.GetAsync($"http://localhost:{_port}/not-found");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
         catch (Exception ex)
@@ -245,32 +270,7 @@ public class MetricServerTests
     }
 
     [Fact]
-    public async Task Find_Default_Metric()
-    {
-        _metricServer = new MetricServer(new MetricServerOptions { Port = _port, CollectorRegistryInstance = new CollectorRegistry(), UseDefaultCollectors = true });
-
-        try
-        {
-            _metricServer.Start();
-
-            using var httpClient = new HttpClient();
-            string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
-            Assert.Contains("dotnet_collection_count_total", response);
-            Assert.Contains("process_cpu_seconds_total", response);
-        }
-        catch (Exception ex)
-        {
-            _testOutputHelper.WriteLine(ex.ToString());
-            throw;
-        }
-        finally
-        {
-            _metricServer.Stop();
-        }
-    }
-
-    [Fact]
-    public async Task Add_Encoding()
+    public async Task CustormEncoding_FindHelp()
     {
         var registry = new CollectorRegistry();
         var factory = new MetricFactory(registry);
@@ -297,11 +297,5 @@ public class MetricServerTests
         {
             _metricServer.Stop();
         }
-    }
-
-    [Fact]
-    public void Null_Options_Throws_ArgumentNullException()
-    {
-        Assert.Throws<ArgumentNullException>(() => new MetricServer(null));
     }
 }
