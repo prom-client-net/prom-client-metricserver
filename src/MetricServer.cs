@@ -123,7 +123,7 @@ namespace Prometheus.Client.MetricServer
                         var response = context.Response;
                         response.ContentType = contentType;
 
-                        using var outputStream = response.Body;
+                        await using var outputStream = response.Body;
                         await ScrapeHandler.ProcessAsync(_options.CollectorRegistryInstance, outputStream);
                     });
                 });
