@@ -20,13 +20,45 @@ public class MetricServerTests
     }
 
     [Fact]
-    public void Start_Stop_LegacyConstructor_IsRunning()
+    public void Start_Stop_IsRunning()
     {
         var metricServer = new MetricServer(new MetricServerOptions
         {
             Port = _port,
             CollectorRegistryInstance = new CollectorRegistry()
         });
+        metricServer.Start();
+        Assert.True(metricServer.IsRunning);
+        metricServer.Stop();
+        Assert.False(metricServer.IsRunning);
+    }
+
+    [Fact]
+    public void Start_DoubleStop_WithoutExceptions()
+    {
+        var metricServer = new MetricServer(new MetricServerOptions
+        {
+            Port = _port,
+            CollectorRegistryInstance = new CollectorRegistry()
+        });
+        metricServer.Start();
+        Assert.True(metricServer.IsRunning);
+        metricServer.Stop();
+        Assert.False(metricServer.IsRunning);
+        metricServer.Stop();
+        Assert.False(metricServer.IsRunning);
+    }
+
+    [Fact]
+    public void DoubleStart_Stop_WithoutExceptions()
+    {
+        var metricServer = new MetricServer(new MetricServerOptions
+        {
+            Port = _port,
+            CollectorRegistryInstance = new CollectorRegistry()
+        });
+        metricServer.Start();
+        Assert.True(metricServer.IsRunning);
         metricServer.Start();
         Assert.True(metricServer.IsRunning);
         metricServer.Stop();
@@ -232,5 +264,12 @@ public class MetricServerTests
         {
             metricServer.Stop();
         }
+    }
+
+
+    [Fact]
+    public void Null_Options_Throws_ArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => new MetricServer(null));
     }
 }
