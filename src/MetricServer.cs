@@ -34,8 +34,8 @@ public class MetricServer : IMetricServer
         if (options == null)
             throw new ArgumentNullException(nameof(options));
 
-        if (string.IsNullOrEmpty(options.MapPath) || !options.MapPath.StartsWith("/"))
-            throw new ArgumentException($"mapPath '{options.MapPath}' should start with '/'");
+        if (!options.MapPath.StartsWith("/"))
+            options.MapPath = "/" + options.MapPath;
 
         _options = options;
 

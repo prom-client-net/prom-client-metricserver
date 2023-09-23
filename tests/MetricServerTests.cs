@@ -113,13 +113,6 @@ public class MetricServerTests
         }
     }
 
-    [Fact]
-    public void Wrong_MapPath()
-    {
-        Assert.Throws<ArgumentException>(() => new MetricServer(
-            new MetricServerOptions { Port = _port, MapPath = "temp" }));
-    }
-
     [Theory]
     [InlineData("/metrics")]
     [InlineData("/metrics12")]
@@ -305,7 +298,6 @@ public class MetricServerTests
             _metricServer.Stop();
         }
     }
-
 
     [Fact]
     public void Null_Options_Throws_ArgumentNullException()
