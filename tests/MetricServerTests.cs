@@ -34,7 +34,7 @@ public class MetricServerTests
     }
 
     [Fact]
-    public void Start_DoubleStop_WithoutExceptions()
+    public void Start_DoubleStop_IsRunning()
     {
         var metricServer = new MetricServer(new MetricServerOptions
         {
@@ -50,7 +50,7 @@ public class MetricServerTests
     }
 
     [Fact]
-    public void DoubleStart_Stop_WithoutExceptions()
+    public void DoubleStart_Stop_IsRunning()
     {
         var metricServer = new MetricServer(new MetricServerOptions
         {
@@ -158,7 +158,7 @@ public class MetricServerTests
     }
 
     [Fact]
-    public async Task Find_Metric()
+    public async Task Custom_Find_Metric()
     {
         var registry = new CollectorRegistry();
         var factory = new MetricFactory(registry);
@@ -175,6 +175,58 @@ public class MetricServerTests
             using var httpClient = new HttpClient();
             string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
             Assert.Contains(metricName, response);
+        }
+        catch (Exception ex)
+        {
+            _testOutputHelper.WriteLine(ex.ToString());
+            throw;
+        }
+        finally
+        {
+            metricServer.Stop();
+        }
+    }
+
+    [Fact]
+    public async Task AddLegacyMetrics_False_CheckMetrics()
+    {
+        var metricServer = new MetricServer(new MetricServerOptions { Port = _port, CollectorRegistryInstance = new CollectorRegistry() });
+
+        try
+        {
+            metricServer.Start();
+            using var httpClient = new HttpClient();
+            string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
+            Assert.Contains("process_working_set_bytes", response);
+            Assert.Contains("dotnet_total_memory_bytes", response);
+            Assert.DoesNotContain("process_working_set", response);
+            Assert.DoesNotContain("dotnet_totalmemory", response);
+        }
+        catch (Exception ex)
+        {
+            _testOutputHelper.WriteLine(ex.ToString());
+            throw;
+        }
+        finally
+        {
+            metricServer.Stop();
+        }
+    }
+
+    [Fact]
+    public async Task AddLegacyMetrics_True_CheckMetrics()
+    {
+        var metricServer = new MetricServer(new MetricServerOptions { Port = _port, CollectorRegistryInstance = new CollectorRegistry(), AddLegacyMetrics = true });
+
+        try
+        {
+            metricServer.Start();
+            using var httpClient = new HttpClient();
+            string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
+            Assert.Contains("process_working_set_bytes", response);
+            Assert.Contains("dotnet_total_memory_bytes", response);
+            Assert.Contains("process_working_set", response);
+            Assert.Contains("dotnet_totalmemory", response);
         }
         catch (Exception ex)
         {
