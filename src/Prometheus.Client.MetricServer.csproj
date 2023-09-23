@@ -10,4 +10,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Prometheus.Client" Version="[5.2.0,6.0.0)" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="$(MSBuildProjectName).Tests, PublicKey=002400000480000094000000060200000024000052534131000400000100010035b85a8ca7e3391c4ac9123c6e51491977a1229b85e572e70350884579334c7d44e3c00de913f684eaab330ceeaba6eb41bbb359b7157ff17542a4e112856c4a18ab521eb7acb4f5a03f3d0a7e849e5406bae28d6780bb2453122e60b52aa76ae10611a1d4a0ffba682558c05ae2b5a0709c260b8a0c3afb15cf2ca0eed949ee" />
+  </ItemGroup>
 </Project>

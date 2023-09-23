@@ -40,7 +40,6 @@ public class MetricServerTests
         Assert.False(_metricServer.IsRunning);
     }
 
-
     [Fact]
     public void Start_DoubleStop_IsRunning()
     {
@@ -73,7 +72,6 @@ public class MetricServerTests
         Assert.False(_metricServer.IsRunning);
     }
 
-
     [Fact]
     public void Start_Stop_WithDefaultRegisry_IsRunning()
     {
@@ -93,7 +91,7 @@ public class MetricServerTests
             var counter = Metrics.DefaultFactory.CreateCounter("test_counter", "help");
             counter.Inc();
             using var httpClient = new HttpClient();
-            string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
+            string response = await httpClient.GetStringAsync($"http://localhost:{_port}{Defaults.MapPath}");
             Assert.False(string.IsNullOrEmpty(response));
             Assert.Contains("process_private_memory_bytes", response);
             Assert.Contains("dotnet_total_memory_bytes", response);
@@ -136,8 +134,8 @@ public class MetricServerTests
     }
 
     [Theory]
+    [InlineData(Defaults.MapPath)]
     [InlineData("metrics")]
-    [InlineData("/metrics")]
     [InlineData("metrics12")]
     [InlineData("/metrics965")]
     public async Task SetMapPath_FindMetrics(string mapPath)
@@ -181,7 +179,7 @@ public class MetricServerTests
             counter.Inc();
 
             using var httpClient = new HttpClient();
-            string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
+            string response = await httpClient.GetStringAsync($"http://localhost:{_port}{Defaults.MapPath}");
             Assert.Contains(metricName, response);
         }
         catch (Exception ex)
@@ -202,7 +200,7 @@ public class MetricServerTests
         {
             _metricServer.Start();
             using var httpClient = new HttpClient();
-            string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
+            string response = await httpClient.GetStringAsync($"http://localhost:{_port}{Defaults.MapPath}");
             Assert.Contains("process_private_memory_bytes", response);
             Assert.Contains("dotnet_total_memory_bytes", response);
             Assert.DoesNotContain("process_private_bytes", response);
@@ -228,7 +226,7 @@ public class MetricServerTests
         {
             _metricServer.Start();
             using var httpClient = new HttpClient();
-            string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
+            string response = await httpClient.GetStringAsync($"http://localhost:{_port}{Defaults.MapPath}");
             Assert.Contains("process_private_memory_bytes", response);
             Assert.Contains("dotnet_total_memory_bytes", response);
             Assert.Contains("process_private_bytes", response);
@@ -285,7 +283,7 @@ public class MetricServerTests
             counter.Inc();
 
             using var httpClient = new HttpClient();
-            string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
+            string response = await httpClient.GetStringAsync($"http://localhost:{_port}{Defaults.MapPath}");
             Assert.Contains(help, response);
         }
         catch (Exception ex)

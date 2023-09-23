@@ -23,7 +23,7 @@ public class MetricServerOptions
     /// <summary>
     ///     Endpoint path
     /// </summary>
-    public string MapPath { get; set; } = "/metrics";
+    public string MapPath { get; set; } = Defaults.MapPath;
 
     /// <summary>
     ///     Https certificate

@@ -106,10 +106,9 @@ public class MetricServer : IMetricServer
 
         public void Configure(IApplicationBuilder app)
         {
-            var contentType = "text/plain; version=0.0.4";
-
-            if (_options.ResponseEncoding != null)
-                contentType += $"; charset={_options.ResponseEncoding.BodyName}";
+            var contentType = _options.ResponseEncoding != null
+                ? $"{Defaults.ContentType}; charset={_options.ResponseEncoding.BodyName}"
+                : Defaults.ContentType;
 
             app.Map(_options.MapPath, coreapp =>
             {
