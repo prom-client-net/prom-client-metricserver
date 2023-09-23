@@ -38,7 +38,7 @@ public class MetricServerOptions
     /// <summary>
     ///     Use default collectors(dotnet and process stats)
     /// </summary>
-    public bool UseDefaultCollectors { get; set; } = false;
+    public bool UseDefaultCollectors { get; set; } = true;
 
     /// <summary>
     ///     Charset of text response.
