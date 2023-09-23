@@ -7,127 +7,126 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Prometheus.Client.Collectors;
 
-namespace Prometheus.Client.MetricServer
+namespace Prometheus.Client.MetricServer;
+
+/// <inheritdoc cref="IMetricServer" />
+/// <summary>
+///     MetricSever based of Kestrel
+/// </summary>
+public class MetricServer : IMetricServer
 {
-    /// <inheritdoc cref="IMetricServer" />
+    private readonly MetricServerOptions _options;
+    private IWebHost _host;
+
     /// <summary>
-    ///     MetricSever based of Kestrel
+    ///     Constructor
     /// </summary>
-    public class MetricServer : IMetricServer
+    public MetricServer()
+        : this(new MetricServerOptions())
+    {
+    }
+
+    /// <summary>
+    ///     Constructor
+    /// </summary>
+    public MetricServer(MetricServerOptions options)
+    {
+        if (options == null)
+            throw new ArgumentNullException(nameof(options));
+
+        if (string.IsNullOrEmpty(options.MapPath) || !options.MapPath.StartsWith("/"))
+            throw new ArgumentException($"mapPath '{options.MapPath}' should start with '/'");
+
+        _options = options;
+
+        _options.CollectorRegistryInstance ??= Metrics.DefaultCollectorRegistry;
+
+        if (_options.UseDefaultCollectors)
+        {
+#pragma warning disable CS0618
+            if (options.AddLegacyMetrics)
+                options.CollectorRegistryInstance.UseDefaultCollectors(options.MetricPrefixName, options.AddLegacyMetrics);
+            else
+                options.CollectorRegistryInstance.UseDefaultCollectors(options.MetricPrefixName);
+#pragma warning restore CS0618
+        }
+    }
+
+    /// <inheritdoc />
+    public bool IsRunning => _host != null;
+
+    /// <inheritdoc />
+    public void Start()
+    {
+        if (IsRunning)
+            return;
+
+        var configBuilder = new ConfigurationBuilder();
+        configBuilder.Properties["parent"] = this;
+        var config = configBuilder.Build();
+
+        _host = new WebHostBuilder()
+            .UseConfiguration(config)
+            .UseKestrel(options =>
+            {
+                if (_options.Certificate != null)
+                    options.Listen(IPAddress.Any, _options.Port, listenOptions => { listenOptions.UseHttps(_options.Certificate); });
+            })
+            .UseUrls($"http{(_options.Certificate != null ? "s" : "")}://{_options.Host}:{_options.Port}")
+            .ConfigureServices(services => { services.AddSingleton<IStartup>(new Startup(_options)); })
+            .UseSetting(WebHostDefaults.ApplicationKey, typeof(Startup).GetTypeInfo().Assembly.FullName)
+            .Build();
+
+        _host.Start();
+    }
+
+    /// <inheritdoc />
+    public void Stop()
+    {
+        if (!IsRunning)
+            return;
+
+        _host.Dispose();
+        _host = null;
+    }
+
+    internal class Startup : IStartup
     {
         private readonly MetricServerOptions _options;
-        private IWebHost _host;
 
-        /// <summary>
-        ///     Constructor
-        /// </summary>
-        public MetricServer()
-            : this(new MetricServerOptions())
+        public Startup(MetricServerOptions options)
         {
-        }
-
-        /// <summary>
-        ///     Constructor
-        /// </summary>
-        public MetricServer(MetricServerOptions options)
-        {
-            if (options == null)
-                throw new ArgumentNullException(nameof(options));
-
-            if (string.IsNullOrEmpty(options.MapPath) || !options.MapPath.StartsWith("/"))
-                throw new ArgumentException($"mapPath '{options.MapPath}' should start with '/'");
-
             _options = options;
 
-            _options.CollectorRegistryInstance ??= Metrics.DefaultCollectorRegistry;
-
-            if (_options.UseDefaultCollectors)
-            {
-#pragma warning disable CS0618
-                if (options.AddLegacyMetrics)
-                    options.CollectorRegistryInstance.UseDefaultCollectors(options.MetricPrefixName, options.AddLegacyMetrics);
-                else
-                    options.CollectorRegistryInstance.UseDefaultCollectors(options.MetricPrefixName);
-#pragma warning restore CS0618
-            }
+            var builder = new ConfigurationBuilder();
+            Configuration = builder.Build();
         }
 
-        /// <inheritdoc />
-        public bool IsRunning => _host != null;
+        public IConfigurationRoot Configuration { get; }
 
-        /// <inheritdoc />
-        public void Start()
+        public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            if (IsRunning)
-                return;
+            return services.BuildServiceProvider();
+        }
 
-            var configBuilder = new ConfigurationBuilder();
-            configBuilder.Properties["parent"] = this;
-            var config = configBuilder.Build();
+        public void Configure(IApplicationBuilder app)
+        {
+            var contentType = "text/plain; version=0.0.4";
 
-            _host = new WebHostBuilder()
-                .UseConfiguration(config)
-                .UseKestrel(options =>
+            if (_options.ResponseEncoding != null)
+                contentType += $"; charset={_options.ResponseEncoding.BodyName}";
+
+            app.Map(_options.MapPath, coreapp =>
+            {
+                coreapp.Run(async context =>
                 {
-                    if (_options.Certificate != null)
-                        options.Listen(IPAddress.Any, _options.Port, listenOptions => { listenOptions.UseHttps(_options.Certificate); });
-                })
-                .UseUrls($"http{(_options.Certificate != null ? "s" : "")}://{_options.Host}:{_options.Port}")
-                .ConfigureServices(services => { services.AddSingleton<IStartup>(new Startup(_options)); })
-                .UseSetting(WebHostDefaults.ApplicationKey, typeof(Startup).GetTypeInfo().Assembly.FullName)
-                .Build();
+                    var response = context.Response;
+                    response.ContentType = contentType;
 
-            _host.Start();
-        }
-
-        /// <inheritdoc />
-        public void Stop()
-        {
-            if (!IsRunning)
-                return;
-
-            _host.Dispose();
-            _host = null;
-        }
-
-        internal class Startup : IStartup
-        {
-            private readonly MetricServerOptions _options;
-
-            public Startup(MetricServerOptions options)
-            {
-                _options = options;
-
-                var builder = new ConfigurationBuilder();
-                Configuration = builder.Build();
-            }
-
-            public IConfigurationRoot Configuration { get; }
-
-            public IServiceProvider ConfigureServices(IServiceCollection services)
-            {
-                return services.BuildServiceProvider();
-            }
-
-            public void Configure(IApplicationBuilder app)
-            {
-                var contentType = "text/plain; version=0.0.4";
-
-                if (_options.ResponseEncoding != null)
-                    contentType += $"; charset={_options.ResponseEncoding.BodyName}";
-
-                app.Map(_options.MapPath, coreapp =>
-                {
-                    coreapp.Run(async context =>
-                    {
-                        var response = context.Response;
-                        response.ContentType = contentType;
-
-                        await using var outputStream = response.Body;
-                        await ScrapeHandler.ProcessAsync(_options.CollectorRegistryInstance, outputStream);
-                    });
+                    await using var outputStream = response.Body;
+                    await ScrapeHandler.ProcessAsync(_options.CollectorRegistryInstance, outputStream);
                 });
-            }
+            });
         }
     }
 }
