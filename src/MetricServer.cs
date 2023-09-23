@@ -34,8 +34,8 @@ public class MetricServer : IMetricServer
         if (options == null)
             throw new ArgumentNullException(nameof(options));
 
-        if (string.IsNullOrEmpty(options.MapPath) || !options.MapPath.StartsWith("/"))
-            throw new ArgumentException($"mapPath '{options.MapPath}' should start with '/'");
+        if (!options.MapPath.StartsWith("/"))
+            options.MapPath = "/" + options.MapPath;
 
         _options = options;
 
@@ -97,12 +97,7 @@ public class MetricServer : IMetricServer
         public Startup(MetricServerOptions options)
         {
             _options = options;
-
-            var builder = new ConfigurationBuilder();
-            Configuration = builder.Build();
         }
-
-        public IConfigurationRoot Configuration { get; }
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
@@ -111,10 +106,9 @@ public class MetricServer : IMetricServer
 
         public void Configure(IApplicationBuilder app)
         {
-            var contentType = "text/plain; version=0.0.4";
-
-            if (_options.ResponseEncoding != null)
-                contentType += $"; charset={_options.ResponseEncoding.BodyName}";
+            var contentType = _options.ResponseEncoding != null
+                ? $"{Defaults.ContentType}; charset={_options.ResponseEncoding.BodyName}"
+                : Defaults.ContentType;
 
             app.Map(_options.MapPath, coreapp =>
             {

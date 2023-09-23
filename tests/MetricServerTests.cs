@@ -11,50 +11,90 @@ namespace Prometheus.Client.MetricServer.Tests;
 
 public class MetricServerTests
 {
+    private IMetricServer _metricServer;
     private readonly ITestOutputHelper _testOutputHelper;
     private const int _port = 9091;
 
     public MetricServerTests(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
-    }
-
-    [Fact]
-    public void Start_Stop_LegacyConstructor_IsRunning()
-    {
-        var metricServer = new MetricServer(new MetricServerOptions
+        _metricServer = new MetricServer(new MetricServerOptions
         {
             Port = _port,
             CollectorRegistryInstance = new CollectorRegistry()
         });
-        metricServer.Start();
-        Assert.True(metricServer.IsRunning);
-        metricServer.Stop();
-        Assert.False(metricServer.IsRunning);
     }
 
     [Fact]
-    public void Start_Stop_DefaultPort_IsRunning()
+    public void Null_Options_Throws_ArgumentNullException()
     {
-        var metricServer = new MetricServer();
-        metricServer.Start();
-        Assert.True(metricServer.IsRunning);
-        metricServer.Stop();
-        Assert.False(metricServer.IsRunning);
+        Assert.Throws<ArgumentNullException>(() => new MetricServer(null));
     }
 
     [Fact]
-    public async Task Base_MapPath()
+    public void Start_Stop_IsRunning()
     {
-        var metricServer = new MetricServer(new MetricServerOptions { Port = _port });
+        _metricServer.Start();
+        Assert.True(_metricServer.IsRunning);
+        _metricServer.Stop();
+        Assert.False(_metricServer.IsRunning);
+    }
+
+    [Fact]
+    public void Start_DoubleStop_IsRunning()
+    {
+        _metricServer.Start();
+        Assert.True(_metricServer.IsRunning);
+        _metricServer.Stop();
+        Assert.False(_metricServer.IsRunning);
+        _metricServer.Stop();
+        Assert.False(_metricServer.IsRunning);
+    }
+
+    [Fact]
+    public void DoubleStart_Stop_IsRunning()
+    {
+        _metricServer.Start();
+        Assert.True(_metricServer.IsRunning);
+        _metricServer.Start();
+        Assert.True(_metricServer.IsRunning);
+        _metricServer.Stop();
+        Assert.False(_metricServer.IsRunning);
+    }
+
+    [Fact]
+    public void Start_Stop_WithDefaultPort_IsRunning()
+    {
+        _metricServer = new MetricServer(new MetricServerOptions { CollectorRegistryInstance = new CollectorRegistry() });
+        _metricServer.Start();
+        Assert.True(_metricServer.IsRunning);
+        _metricServer.Stop();
+        Assert.False(_metricServer.IsRunning);
+    }
+
+    [Fact]
+    public void Start_Stop_WithDefaultRegisry_IsRunning()
+    {
+        _metricServer = new MetricServer();
+        _metricServer.Start();
+        Assert.True(_metricServer.IsRunning);
+        _metricServer.Stop();
+        Assert.False(_metricServer.IsRunning);
+    }
+
+    [Fact]
+    public async Task BaseMapPath_FindMetrics()
+    {
         try
         {
-            metricServer.Start();
+            _metricServer.Start();
             var counter = Metrics.DefaultFactory.CreateCounter("test_counter", "help");
             counter.Inc();
             using var httpClient = new HttpClient();
-            string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
+            string response = await httpClient.GetStringAsync($"http://localhost:{_port}{Defaults.MapPath}");
             Assert.False(string.IsNullOrEmpty(response));
+            Assert.Contains("process_private_memory_bytes", response);
+            Assert.Contains("dotnet_total_memory_bytes", response);
         }
         catch (Exception ex)
         {
@@ -63,22 +103,24 @@ public class MetricServerTests
         }
         finally
         {
-            metricServer.Stop();
+            _metricServer.Stop();
         }
     }
 
     [Fact]
-    public async Task MapPath_WithEndSlash()
+    public async Task SetMapPath_FindMetricsWithEndSlash()
     {
-        var metricServer = new MetricServer(new MetricServerOptions { Port = _port, MapPath = "/test" });
+        _metricServer = new MetricServer(new MetricServerOptions { Port = _port, CollectorRegistryInstance = new CollectorRegistry(), MapPath = "/test" });
         try
         {
-            metricServer.Start();
+            _metricServer.Start();
             var counter = Metrics.DefaultFactory.CreateCounter("test_counter", "help");
             counter.Inc();
             using var httpClient = new HttpClient();
             string response = await httpClient.GetStringAsync($"http://localhost:{_port}/test/");
             Assert.False(string.IsNullOrEmpty(response));
+            Assert.Contains("process_private_memory_bytes", response);
+            Assert.Contains("dotnet_total_memory_bytes", response);
         }
         catch (Exception ex)
         {
@@ -87,32 +129,28 @@ public class MetricServerTests
         }
         finally
         {
-            metricServer.Stop();
+            _metricServer.Stop();
         }
-    }
-
-    [Fact]
-    public void Wrong_MapPath()
-    {
-        Assert.Throws<ArgumentException>(() => new MetricServer(
-            new MetricServerOptions { Port = _port, MapPath = "temp" }));
     }
 
     [Theory]
-    [InlineData("/metrics")]
-    [InlineData("/metrics12")]
+    [InlineData(Defaults.MapPath)]
+    [InlineData("metrics")]
+    [InlineData("metrics12")]
     [InlineData("/metrics965")]
-    public async Task MapPath(string mapPath)
+    public async Task SetMapPath_FindMetrics(string mapPath)
     {
-        var metricServer = new MetricServer(new MetricServerOptions { Port = _port, MapPath = mapPath });
+        _metricServer = new MetricServer(new MetricServerOptions { Port = _port, CollectorRegistryInstance = new CollectorRegistry(), MapPath = mapPath });
         try
         {
-            metricServer.Start();
-            var counter = Metrics.DefaultFactory.CreateCounter("test_counter", "help");
-            counter.Inc();
+            _metricServer.Start();
             using var httpClient = new HttpClient();
+            if (!mapPath.StartsWith("/"))
+                mapPath = "/" + mapPath;
             string response = await httpClient.GetStringAsync($"http://localhost:{_port}" + mapPath);
             Assert.False(string.IsNullOrEmpty(response));
+            Assert.Contains("process_private_memory_bytes", response);
+            Assert.Contains("dotnet_total_memory_bytes", response);
         }
         catch (Exception ex)
         {
@@ -121,27 +159,27 @@ public class MetricServerTests
         }
         finally
         {
-            metricServer.Stop();
+            _metricServer.Stop();
         }
     }
 
     [Fact]
-    public async Task Find_Metric()
+    public async Task CustomCounter_FindMetric()
     {
         var registry = new CollectorRegistry();
         var factory = new MetricFactory(registry);
-        var metricServer = new MetricServer(new MetricServerOptions { Port = _port, CollectorRegistryInstance = registry });
+        _metricServer = new MetricServer(new MetricServerOptions { Port = _port, CollectorRegistryInstance = registry });
 
         try
         {
-            metricServer.Start();
+            _metricServer.Start();
 
             const string metricName = "myCounter";
             var counter = factory.CreateCounter(metricName, "helptext");
             counter.Inc();
 
             using var httpClient = new HttpClient();
-            string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
+            string response = await httpClient.GetStringAsync($"http://localhost:{_port}{Defaults.MapPath}");
             Assert.Contains(metricName, response);
         }
         catch (Exception ex)
@@ -151,22 +189,71 @@ public class MetricServerTests
         }
         finally
         {
-            metricServer.Stop();
+            _metricServer.Stop();
         }
     }
 
     [Fact]
-    public async Task Url_NotFound()
+    public async Task AddLegacyMetrics_False_FindMetrics()
     {
-        var metricServer = new MetricServer(new MetricServerOptions { Port = _port });
         try
         {
-            metricServer.Start();
+            _metricServer.Start();
+            using var httpClient = new HttpClient();
+            string response = await httpClient.GetStringAsync($"http://localhost:{_port}{Defaults.MapPath}");
+            Assert.Contains("process_private_memory_bytes", response);
+            Assert.Contains("dotnet_total_memory_bytes", response);
+            Assert.DoesNotContain("process_private_bytes", response);
+            Assert.DoesNotContain("dotnet_totalmemory", response);
+        }
+        catch (Exception ex)
+        {
+            _testOutputHelper.WriteLine(ex.ToString());
+            throw;
+        }
+        finally
+        {
+            _metricServer.Stop();
+        }
+    }
+
+    [Fact]
+    public async Task AddLegacyMetrics_True_FindMetrics()
+    {
+        _metricServer = new MetricServer(new MetricServerOptions { Port = _port, CollectorRegistryInstance = new CollectorRegistry(), AddLegacyMetrics = true });
+
+        try
+        {
+            _metricServer.Start();
+            using var httpClient = new HttpClient();
+            string response = await httpClient.GetStringAsync($"http://localhost:{_port}{Defaults.MapPath}");
+            Assert.Contains("process_private_memory_bytes", response);
+            Assert.Contains("dotnet_total_memory_bytes", response);
+            Assert.Contains("process_private_bytes", response);
+            Assert.Contains("dotnet_totalmemory", response);
+        }
+        catch (Exception ex)
+        {
+            _testOutputHelper.WriteLine(ex.ToString());
+            throw;
+        }
+        finally
+        {
+            _metricServer.Stop();
+        }
+    }
+
+    [Fact]
+    public async Task WrongUrl_NotFound()
+    {
+        try
+        {
+            _metricServer.Start();
             var counter = Metrics.DefaultFactory.CreateCounter("test_counter", "help");
             counter.Inc();
             using var httpClient = new HttpClient();
 
-            var response = await httpClient.GetAsync($"http://localhost:{_port}");
+            var response = await httpClient.GetAsync($"http://localhost:{_port}/not-found");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
         catch (Exception ex)
@@ -176,51 +263,27 @@ public class MetricServerTests
         }
         finally
         {
-            metricServer.Stop();
+            _metricServer.Stop();
         }
     }
 
     [Fact]
-    public async Task Find_Default_Metric()
+    public async Task CustormEncoding_FindHelp()
     {
         var registry = new CollectorRegistry();
-        var metricServer = new MetricServer(new MetricServerOptions { Port = _port, CollectorRegistryInstance = registry, UseDefaultCollectors = true });
+        var factory = new MetricFactory(registry);
+        _metricServer = new MetricServer(new MetricServerOptions { Port = _port, CollectorRegistryInstance = registry, ResponseEncoding = Encoding.UTF8 });
 
         try
         {
-            metricServer.Start();
-
-            using var httpClient = new HttpClient();
-            string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
-            Assert.Contains("dotnet_collection_count_total", response);
-            Assert.Contains("process_cpu_seconds_total", response);
-        }
-        catch (Exception ex)
-        {
-            _testOutputHelper.WriteLine(ex.ToString());
-            throw;
-        }
-        finally
-        {
-            metricServer.Stop();
-        }
-    }
-
-    [Fact]
-    public async Task Add_Encoding()
-    {
-        var metricServer = new MetricServer(new MetricServerOptions { Port = _port, ResponseEncoding = Encoding.UTF8 });
-
-        try
-        {
-            metricServer.Start();
+            _metricServer.Start();
 
             const string help = "русский хелп";
-            var counter = Metrics.DefaultFactory.CreateCounter("test_counter_rus", help);
+            var counter = factory.CreateCounter("test_counter_rus", help);
             counter.Inc();
 
             using var httpClient = new HttpClient();
-            string response = await httpClient.GetStringAsync($"http://localhost:{_port}/metrics");
+            string response = await httpClient.GetStringAsync($"http://localhost:{_port}{Defaults.MapPath}");
             Assert.Contains(help, response);
         }
         catch (Exception ex)
@@ -230,7 +293,7 @@ public class MetricServerTests
         }
         finally
         {
-            metricServer.Stop();
+            _metricServer.Stop();
         }
     }
 }

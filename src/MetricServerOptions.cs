@@ -23,7 +23,7 @@ public class MetricServerOptions
     /// <summary>
     ///     Endpoint path
     /// </summary>
-    public string MapPath { get; set; } = "/metrics";
+    public string MapPath { get; set; } = Defaults.MapPath;
 
     /// <summary>
     ///     Https certificate
@@ -38,7 +38,7 @@ public class MetricServerOptions
     /// <summary>
     ///     Use default collectors(dotnet and process stats)
     /// </summary>
-    public bool UseDefaultCollectors { get; set; } = false;
+    public bool UseDefaultCollectors { get; set; } = true;
 
     /// <summary>
     ///     Charset of text response.
@@ -48,7 +48,7 @@ public class MetricServerOptions
     /// <summary>
     ///     Metric prefix for Default collectors
     /// </summary>
-    public string MetricPrefixName { get; set; } = "";
+    public string MetricPrefixName { get; set; } = string.Empty;
 
     /// <summary>
     ///     Add legacy metrics to Default collectors
