@@ -97,12 +97,7 @@ public class MetricServer : IMetricServer
         public Startup(MetricServerOptions options)
         {
             _options = options;
-
-            var builder = new ConfigurationBuilder();
-            Configuration = builder.Build();
         }
-
-        public IConfigurationRoot Configuration { get; }
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
