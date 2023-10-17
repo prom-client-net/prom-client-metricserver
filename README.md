@@ -17,33 +17,30 @@ dotnet add package Prometheus.Client.MetricServer
 
 ## Use
 
-There are [Examples](https://github.com/prom-client-net/prom-examples)
+[Examples](https://github.com/prom-client-net/prom-examples)
 
 Simple Console App with static MetricFactory:
 
 ```c#
 public static void Main(string[] args)
 {
-
     var options = new MetricServerOptions
     {
         Port = 9091
     };
 
-    IMetricServer metricServer = new MetricServer(options);
+    var metricServer = new MetricServer(options);
     metricServer.Start();
-    ...
 
-    var counter =  Metrics.DefaultFactory.CreateCounter("test_count", "helptext");
+    var counter = Metrics.DefaultFactory.CreateCounter("test_count", "helptext");
     counter.Inc();
-    ...
 
     metricServer.Stop();
 }
 
 ```
 
-Worker with DI [extension](https://github.com/prom-client-net/prom-client-dependencyinjection):
+Worker with DI [Prometheus.Client.DependencyInjection](https://github.com/prom-client-net/prom-client-dependencyinjection):
 
 ```c#
 public static async Task Main(string[] args)
