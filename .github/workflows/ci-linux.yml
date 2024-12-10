@@ -1,4 +1,4 @@
-name: CI
+name: CI Linux
 
 on:
   push:
@@ -12,16 +12,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-windows:
-    name: Build & Test (Windows)
-    runs-on: windows-2022
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Run tests
-        run: dotnet test -c Release --filter FullyQualifiedName\!~Tests.Integration -p:CollectCoverage=false
-
   build-linux:
     name: Build, Test & Pack (Linux)
     runs-on: ubuntu-24.04
@@ -42,7 +32,7 @@ jobs:
         run: dotnet build -c Release -p:ContinuousIntegrationBuild=true
 
       - name: Run tests
-        run: dotnet test --no-build -c Release --filter FullyQualifiedName\!~Tests.Integration -p:CollectCoverage=true -e:CoverletOutputFormat=opencover
+        run: dotnet test --no-build -c Release -p:CollectCoverage=true -e:CoverletOutputFormat=opencover
 
       - name: Publish to Codecov
         uses: codecov/codecov-action@v5
@@ -76,7 +66,7 @@ jobs:
 
   github:
     name: Deploy to GitHub
-    needs: [build-windows, build-linux]
+    needs: [build-linux]
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-24.04
     steps:
@@ -85,11 +75,11 @@ jobs:
         with:
           name: nupkgs
       - name: Push to pkg.github.com
-        run: dotnet nuget push "**/*.nupkg" -s https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json -k ${{ secrets.GH_FULL_PAT }}
+        run: dotnet nuget push "**/*.nupkg" -s https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json -k ${{ secrets.GH_FULL_PAT }} --skip-duplicate
 
   nuget:
     name: Deploy to NuGet
-    needs: [build-windows, build-linux]
+    needs: [build-linux]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-24.04
     steps:
