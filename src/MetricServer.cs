@@ -71,15 +71,8 @@ public class MetricServer : IMetricServer
         _host = null;
     }
 
-    internal class Startup : IStartup
+    internal class Startup(MetricServerOptions options) : IStartup
     {
-        private readonly MetricServerOptions _options;
-
-        public Startup(MetricServerOptions options)
-        {
-            _options = options;
-        }
-
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             return services.BuildServiceProvider();
@@ -87,17 +80,17 @@ public class MetricServer : IMetricServer
 
         public void Configure(IApplicationBuilder app)
         {
-            var contentType = _options.ResponseEncoding != null
-                ? $"{Defaults.ContentType}; charset={_options.ResponseEncoding.BodyName}"
+            var contentType = options.ResponseEncoding != null
+                ? $"{Defaults.ContentType}; charset={options.ResponseEncoding.BodyName}"
                 : Defaults.ContentType;
-            app.Map(_options.MapPath, coreapp =>
+            app.Map(options.MapPath, coreapp =>
             {
                 coreapp.Run(async context =>
                 {
                     var response = context.Response;
                     response.ContentType = contentType;
                     await using var outputStream = response.Body;
-                    await ScrapeHandler.ProcessAsync(_options.CollectorRegistry, outputStream);
+                    await ScrapeHandler.ProcessAsync(options.CollectorRegistry, outputStream);
                 });
             });
         }
