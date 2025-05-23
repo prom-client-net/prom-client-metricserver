@@ -1,4 +1,3 @@
-using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Prometheus.Client.Collectors;
@@ -6,47 +5,47 @@ using Prometheus.Client.Collectors;
 namespace Prometheus.Client.MetricServer;
 
 /// <summary>
-///     Metric Server Options
+/// Configuration options for the metrics server.
 /// </summary>
 public class MetricServerOptions
 {
     /// <summary>
-    ///     Host name
+    /// The hostname to bind the server to. Default is "*".
     /// </summary>
     public string Host { get; set; } = "*";
 
     /// <summary>
-    ///     Port number to listen
+    /// The port number to listen on. Default is 5000.
     /// </summary>
     public int Port { get; set; } = 5000;
 
     /// <summary>
-    ///     Endpoint path
+    /// The endpoint path for metrics. Default is "/metrics".
     /// </summary>
     public string MapPath { get; set; } = Defaults.MapPath;
 
     /// <summary>
-    ///     Https certificate
+    /// The HTTPS certificate.
     /// </summary>
     public X509Certificate2 Certificate { get; set; }
 
     /// <summary>
-    ///     Collector Registry instance
+    /// The <see cref="ICollectorRegistry"/> instance to use for metric collection.
     /// </summary>
     public ICollectorRegistry CollectorRegistry { get; set; }
 
     /// <summary>
-    ///     Use default collectors(dotnet and process stats)
+    /// Whether to register default collectors. Default is <c>true</c>.
     /// </summary>
     public bool UseDefaultCollectors { get; set; } = true;
 
     /// <summary>
-    ///     Charset of text response.
+    /// The text encoding for response content.
     /// </summary>
     public Encoding ResponseEncoding { get; set; }
 
     /// <summary>
-    ///     Metric prefix for Default collectors
+    /// Metric name prefix for default collectors.
     /// </summary>
     public string MetricPrefixName { get; set; } = string.Empty;
 }

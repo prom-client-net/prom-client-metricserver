@@ -1,22 +1,22 @@
 namespace Prometheus.Client.MetricServer;
 
 /// <summary>
-///     MetricSever
+/// Interface for the metrics server.
 /// </summary>
 public interface IMetricServer
 {
     /// <summary>
-    ///     Server is Running?
+    /// Get a value indicating whether the server is currently running.
     /// </summary>
     bool IsRunning { get; }
 
     /// <summary>
-    ///     Start server
+    /// Start the metrics server.
     /// </summary>
     void Start();
 
     /// <summary>
-    ///     Stop server
+    /// Stop the metrics server.
     /// </summary>
     void Stop();
 }

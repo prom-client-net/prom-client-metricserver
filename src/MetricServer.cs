@@ -9,9 +9,8 @@ using Prometheus.Client.Collectors;
 
 namespace Prometheus.Client.MetricServer;
 
-/// <inheritdoc cref="IMetricServer" />
 /// <summary>
-///     MetricSever based of Kestrel
+/// Kestrel-based implementation of the metrics server.
 /// </summary>
 public class MetricServer : IMetricServer
 {
@@ -19,7 +18,7 @@ public class MetricServer : IMetricServer
     private IWebHost _host;
 
     /// <summary>
-    ///     Constructor
+    /// Initialize a new instance of the <see cref="MetricServer"/> class with default options.
     /// </summary>
     public MetricServer()
         : this(new MetricServerOptions())
@@ -27,36 +26,29 @@ public class MetricServer : IMetricServer
     }
 
     /// <summary>
-    ///     Constructor
+    /// Initialize a new instance of the <see cref="MetricServer"/> class with the specified options.
     /// </summary>
+    /// <param name="options">The server configuration options.</param>
     public MetricServer(MetricServerOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
-
         if (!options.MapPath.StartsWith('/'))
             options.MapPath = "/" + options.MapPath;
-
         _options = options;
-
         _options.CollectorRegistry ??= Metrics.DefaultCollectorRegistry;
-
         if (_options.UseDefaultCollectors)
             options.CollectorRegistry.UseDefaultCollectors(options.MetricPrefixName);
     }
 
-    /// <inheritdoc />
     public bool IsRunning => _host != null;
 
-    /// <inheritdoc />
     public void Start()
     {
         if (IsRunning)
             return;
-
         var configBuilder = new ConfigurationBuilder();
         configBuilder.Properties["parent"] = this;
         var config = configBuilder.Build();
-
         _host = new WebHostBuilder()
             .UseConfiguration(config)
             .UseKestrel(options =>
@@ -68,16 +60,13 @@ public class MetricServer : IMetricServer
             .ConfigureServices(services => { services.AddSingleton<IStartup>(new Startup(_options)); })
             .UseSetting(WebHostDefaults.ApplicationKey, typeof(Startup).GetTypeInfo().Assembly.FullName)
             .Build();
-
         _host.Start();
     }
 
-    /// <inheritdoc />
     public void Stop()
     {
         if (!IsRunning)
             return;
-
         _host.Dispose();
         _host = null;
     }
@@ -101,14 +90,12 @@ public class MetricServer : IMetricServer
             var contentType = _options.ResponseEncoding != null
                 ? $"{Defaults.ContentType}; charset={_options.ResponseEncoding.BodyName}"
                 : Defaults.ContentType;
-
             app.Map(_options.MapPath, coreapp =>
             {
                 coreapp.Run(async context =>
                 {
                     var response = context.Response;
                     response.ContentType = contentType;
-
                     await using var outputStream = response.Body;
                     await ScrapeHandler.ProcessAsync(_options.CollectorRegistry, outputStream);
                 });
