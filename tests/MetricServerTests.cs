@@ -82,7 +82,7 @@ public class MetricServerTests(PortFixture fixture, ITestOutputHelper testOutput
             var counter = Metrics.DefaultFactory.CreateCounter("test_counter", "help");
             counter.Inc();
             using var httpClient = new HttpClient();
-            string response = await httpClient.GetStringAsync($"http://localhost:{fixture.Port}{Defaults.MapPath}");
+            string response = await httpClient.GetStringAsync($"http://localhost:{fixture.Port}{Defaults.MapPath}", TestContext.Current.CancellationToken);
             Assert.False(string.IsNullOrEmpty(response));
             Assert.Contains("process_private_memory_bytes", response);
             Assert.Contains("dotnet_total_memory_bytes", response);
@@ -101,14 +101,15 @@ public class MetricServerTests(PortFixture fixture, ITestOutputHelper testOutput
     [Fact]
     public async Task SetMapPath_FindMetricsWithEndSlash()
     {
-        _metricServer = new MetricServer(new MetricServerOptions { Port = fixture.Port, CollectorRegistryInstance = new CollectorRegistry(), MapPath = "/test" });
+        _metricServer = new MetricServer(
+            new MetricServerOptions { Port = fixture.Port, CollectorRegistryInstance = new CollectorRegistry(), MapPath = "/test" });
         try
         {
             _metricServer.Start();
             var counter = Metrics.DefaultFactory.CreateCounter("test_counter", "help");
             counter.Inc();
             using var httpClient = new HttpClient();
-            string response = await httpClient.GetStringAsync($"http://localhost:{fixture.Port}/test/");
+            string response = await httpClient.GetStringAsync($"http://localhost:{fixture.Port}/test/", TestContext.Current.CancellationToken);
             Assert.False(string.IsNullOrEmpty(response));
             Assert.Contains("process_private_memory_bytes", response);
             Assert.Contains("dotnet_total_memory_bytes", response);
@@ -131,14 +132,15 @@ public class MetricServerTests(PortFixture fixture, ITestOutputHelper testOutput
     [InlineData("/metrics965")]
     public async Task SetMapPath_FindMetrics(string mapPath)
     {
-        _metricServer = new MetricServer(new MetricServerOptions { Port = fixture.Port, CollectorRegistryInstance = new CollectorRegistry(), MapPath = mapPath });
+        _metricServer = new MetricServer(
+            new MetricServerOptions { Port = fixture.Port, CollectorRegistryInstance = new CollectorRegistry(), MapPath = mapPath });
         try
         {
             _metricServer.Start();
             using var httpClient = new HttpClient();
             if (!mapPath.StartsWith("/"))
                 mapPath = "/" + mapPath;
-            string response = await httpClient.GetStringAsync($"http://localhost:{fixture.Port}" + mapPath);
+            string response = await httpClient.GetStringAsync($"http://localhost:{fixture.Port}" + mapPath, TestContext.Current.CancellationToken);
             Assert.False(string.IsNullOrEmpty(response));
             Assert.Contains("process_private_memory_bytes", response);
             Assert.Contains("dotnet_total_memory_bytes", response);
@@ -170,7 +172,7 @@ public class MetricServerTests(PortFixture fixture, ITestOutputHelper testOutput
             counter.Inc();
 
             using var httpClient = new HttpClient();
-            string response = await httpClient.GetStringAsync($"http://localhost:{fixture.Port}{Defaults.MapPath}");
+            string response = await httpClient.GetStringAsync($"http://localhost:{fixture.Port}{Defaults.MapPath}", TestContext.Current.CancellationToken);
             Assert.Contains(metricName, response);
         }
         catch (Exception ex)
@@ -191,7 +193,7 @@ public class MetricServerTests(PortFixture fixture, ITestOutputHelper testOutput
         {
             _metricServer.Start();
             using var httpClient = new HttpClient();
-            string response = await httpClient.GetStringAsync($"http://localhost:{fixture.Port}{Defaults.MapPath}");
+            string response = await httpClient.GetStringAsync($"http://localhost:{fixture.Port}{Defaults.MapPath}", TestContext.Current.CancellationToken);
             Assert.Contains("process_private_memory_bytes", response);
             Assert.Contains("dotnet_total_memory_bytes", response);
             Assert.DoesNotContain("process_private_bytes", response);
@@ -218,7 +220,7 @@ public class MetricServerTests(PortFixture fixture, ITestOutputHelper testOutput
         {
             _metricServer.Start();
             using var httpClient = new HttpClient();
-            string response = await httpClient.GetStringAsync($"http://localhost:{fixture.Port}{Defaults.MapPath}");
+            string response = await httpClient.GetStringAsync($"http://localhost:{fixture.Port}{Defaults.MapPath}", TestContext.Current.CancellationToken);
             Assert.Contains("process_private_memory_bytes", response);
             Assert.Contains("dotnet_total_memory_bytes", response);
             Assert.Contains("process_private_bytes", response);
@@ -245,7 +247,7 @@ public class MetricServerTests(PortFixture fixture, ITestOutputHelper testOutput
             counter.Inc();
             using var httpClient = new HttpClient();
 
-            var response = await httpClient.GetAsync($"http://localhost:{fixture.Port}/not-found");
+            var response = await httpClient.GetAsync($"http://localhost:{fixture.Port}/not-found", TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
         catch (Exception ex)
@@ -264,7 +266,8 @@ public class MetricServerTests(PortFixture fixture, ITestOutputHelper testOutput
     {
         var registry = new CollectorRegistry();
         var factory = new MetricFactory(registry);
-        _metricServer = new MetricServer(new MetricServerOptions { Port = fixture.Port, CollectorRegistryInstance = registry, ResponseEncoding = Encoding.UTF8 });
+        _metricServer = new MetricServer(
+            new MetricServerOptions { Port = fixture.Port, CollectorRegistryInstance = registry, ResponseEncoding = Encoding.UTF8 });
 
         try
         {
@@ -275,7 +278,7 @@ public class MetricServerTests(PortFixture fixture, ITestOutputHelper testOutput
             counter.Inc();
 
             using var httpClient = new HttpClient();
-            string response = await httpClient.GetStringAsync($"http://localhost:{fixture.Port}{Defaults.MapPath}");
+            string response = await httpClient.GetStringAsync($"http://localhost:{fixture.Port}{Defaults.MapPath}", TestContext.Current.CancellationToken);
             Assert.Contains(help, response);
         }
         catch (Exception ex)
