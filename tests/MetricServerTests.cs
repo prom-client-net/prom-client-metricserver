@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Prometheus.Client.Collectors;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Prometheus.Client.MetricServer.Tests;
 
