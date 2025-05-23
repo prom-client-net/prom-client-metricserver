@@ -187,57 +187,6 @@ public class MetricServerTests(PortFixture fixture, ITestOutputHelper testOutput
     }
 
     [Fact]
-    public async Task AddLegacyMetrics_False_FindMetrics()
-    {
-        try
-        {
-            _metricServer.Start();
-            using var httpClient = new HttpClient();
-            string response = await httpClient.GetStringAsync($"http://localhost:{fixture.Port}{Defaults.MapPath}", TestContext.Current.CancellationToken);
-            Assert.Contains("process_private_memory_bytes", response);
-            Assert.Contains("dotnet_total_memory_bytes", response);
-            Assert.DoesNotContain("process_private_bytes", response);
-            Assert.DoesNotContain("dotnet_totalmemory", response);
-        }
-        catch (Exception ex)
-        {
-            testOutputHelper.WriteLine(ex.ToString());
-            throw;
-        }
-        finally
-        {
-            _metricServer.Stop();
-        }
-    }
-
-    [Fact]
-    public async Task AddLegacyMetrics_True_FindMetrics()
-    {
-        _metricServer = new MetricServer(new MetricServerOptions
-            { Port = fixture.Port, CollectorRegistry = new CollectorRegistry(), AddLegacyMetrics = true });
-
-        try
-        {
-            _metricServer.Start();
-            using var httpClient = new HttpClient();
-            string response = await httpClient.GetStringAsync($"http://localhost:{fixture.Port}{Defaults.MapPath}", TestContext.Current.CancellationToken);
-            Assert.Contains("process_private_memory_bytes", response);
-            Assert.Contains("dotnet_total_memory_bytes", response);
-            Assert.Contains("process_private_bytes", response);
-            Assert.Contains("dotnet_totalmemory", response);
-        }
-        catch (Exception ex)
-        {
-            testOutputHelper.WriteLine(ex.ToString());
-            throw;
-        }
-        finally
-        {
-            _metricServer.Stop();
-        }
-    }
-
-    [Fact]
     public async Task WrongUrl_NotFound()
     {
         try

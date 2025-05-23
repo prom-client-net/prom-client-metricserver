@@ -49,19 +49,4 @@ public class MetricServerOptions
     ///     Metric prefix for Default collectors
     /// </summary>
     public string MetricPrefixName { get; set; } = string.Empty;
-
-    /// <summary>
-    ///     Add legacy metrics to Default collectors
-    /// </summary>
-    ///  <remarks>
-    ///     Some metrics renamed since v5, <c>AddLegacyMetrics</c> will add old and new name<br />
-    ///     <para>
-    ///       process_virtual_bytes -> process_virtual_memory_bytes<br />
-    ///       process_private_bytes -> process_private_memory_bytes<br />
-    ///       process_working_set -> process_working_set_bytes<br />
-    ///       dotnet_totalmemory -> dotnet_total_memory_bytes
-    ///     </para>
-    /// </remarks>
-    [Obsolete("'AddLegacyMetrics' will be removed in future versions")]
-    public bool AddLegacyMetrics { get; set; }
 }

@@ -31,10 +31,9 @@ public class MetricServer : IMetricServer
     /// </summary>
     public MetricServer(MetricServerOptions options)
     {
-        if (options == null)
-            throw new ArgumentNullException(nameof(options));
+        ArgumentNullException.ThrowIfNull(options);
 
-        if (!options.MapPath.StartsWith("/"))
+        if (!options.MapPath.StartsWith('/'))
             options.MapPath = "/" + options.MapPath;
 
         _options = options;
@@ -42,14 +41,7 @@ public class MetricServer : IMetricServer
         _options.CollectorRegistry ??= Metrics.DefaultCollectorRegistry;
 
         if (_options.UseDefaultCollectors)
-        {
-#pragma warning disable CS0618
-            if (options.AddLegacyMetrics)
-                options.CollectorRegistry.UseDefaultCollectors(options.MetricPrefixName, options.AddLegacyMetrics);
-            else
-                options.CollectorRegistry.UseDefaultCollectors(options.MetricPrefixName);
-#pragma warning restore CS0618
-        }
+            options.CollectorRegistry.UseDefaultCollectors(options.MetricPrefixName);
     }
 
     /// <inheritdoc />
