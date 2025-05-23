@@ -28,7 +28,7 @@ public class MetricServer : IMetricServer
     /// <summary>
     /// Initialize a new instance of the <see cref="MetricServer"/> class with the specified options.
     /// </summary>
-    /// <param name="options">The server configuration options.</param>
+    /// <param name="options">The <see cref="MetricServerOptions"/> configuration.</param>
     public MetricServer(MetricServerOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
