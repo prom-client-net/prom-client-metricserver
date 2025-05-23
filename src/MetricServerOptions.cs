@@ -33,7 +33,7 @@ public class MetricServerOptions
     /// <summary>
     ///     Collector Registry instance
     /// </summary>
-    public ICollectorRegistry CollectorRegistryInstance { get; set; }
+    public ICollectorRegistry CollectorRegistry { get; set; }
 
     /// <summary>
     ///     Use default collectors(dotnet and process stats)

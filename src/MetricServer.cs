@@ -39,15 +39,15 @@ public class MetricServer : IMetricServer
 
         _options = options;
 
-        _options.CollectorRegistryInstance ??= Metrics.DefaultCollectorRegistry;
+        _options.CollectorRegistry ??= Metrics.DefaultCollectorRegistry;
 
         if (_options.UseDefaultCollectors)
         {
 #pragma warning disable CS0618
             if (options.AddLegacyMetrics)
-                options.CollectorRegistryInstance.UseDefaultCollectors(options.MetricPrefixName, options.AddLegacyMetrics);
+                options.CollectorRegistry.UseDefaultCollectors(options.MetricPrefixName, options.AddLegacyMetrics);
             else
-                options.CollectorRegistryInstance.UseDefaultCollectors(options.MetricPrefixName);
+                options.CollectorRegistry.UseDefaultCollectors(options.MetricPrefixName);
 #pragma warning restore CS0618
         }
     }
@@ -118,7 +118,7 @@ public class MetricServer : IMetricServer
                     response.ContentType = contentType;
 
                     await using var outputStream = response.Body;
-                    await ScrapeHandler.ProcessAsync(_options.CollectorRegistryInstance, outputStream);
+                    await ScrapeHandler.ProcessAsync(_options.CollectorRegistry, outputStream);
                 });
             });
         }

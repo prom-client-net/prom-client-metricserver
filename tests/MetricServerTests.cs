@@ -13,7 +13,7 @@ public class MetricServerTests(PortFixture fixture, ITestOutputHelper testOutput
     private MetricServer _metricServer = new(new MetricServerOptions
     {
         Port = fixture.Port,
-        CollectorRegistryInstance = new CollectorRegistry()
+        CollectorRegistry = new CollectorRegistry()
     });
 
     [Fact]
@@ -56,7 +56,7 @@ public class MetricServerTests(PortFixture fixture, ITestOutputHelper testOutput
     [Fact]
     public void Start_Stop_WithDefaultPort_IsRunning()
     {
-        _metricServer = new MetricServer(new MetricServerOptions { CollectorRegistryInstance = new CollectorRegistry() });
+        _metricServer = new MetricServer(new MetricServerOptions { CollectorRegistry = new CollectorRegistry() });
         _metricServer.Start();
         Assert.True(_metricServer.IsRunning);
         _metricServer.Stop();
@@ -102,7 +102,7 @@ public class MetricServerTests(PortFixture fixture, ITestOutputHelper testOutput
     public async Task SetMapPath_FindMetricsWithEndSlash()
     {
         _metricServer = new MetricServer(
-            new MetricServerOptions { Port = fixture.Port, CollectorRegistryInstance = new CollectorRegistry(), MapPath = "/test" });
+            new MetricServerOptions { Port = fixture.Port, CollectorRegistry = new CollectorRegistry(), MapPath = "/test" });
         try
         {
             _metricServer.Start();
@@ -133,7 +133,7 @@ public class MetricServerTests(PortFixture fixture, ITestOutputHelper testOutput
     public async Task SetMapPath_FindMetrics(string mapPath)
     {
         _metricServer = new MetricServer(
-            new MetricServerOptions { Port = fixture.Port, CollectorRegistryInstance = new CollectorRegistry(), MapPath = mapPath });
+            new MetricServerOptions { Port = fixture.Port, CollectorRegistry = new CollectorRegistry(), MapPath = mapPath });
         try
         {
             _metricServer.Start();
@@ -161,7 +161,7 @@ public class MetricServerTests(PortFixture fixture, ITestOutputHelper testOutput
     {
         var registry = new CollectorRegistry();
         var factory = new MetricFactory(registry);
-        _metricServer = new MetricServer(new MetricServerOptions { Port = fixture.Port, CollectorRegistryInstance = registry });
+        _metricServer = new MetricServer(new MetricServerOptions { Port = fixture.Port, CollectorRegistry = registry });
 
         try
         {
@@ -214,7 +214,7 @@ public class MetricServerTests(PortFixture fixture, ITestOutputHelper testOutput
     public async Task AddLegacyMetrics_True_FindMetrics()
     {
         _metricServer = new MetricServer(new MetricServerOptions
-            { Port = fixture.Port, CollectorRegistryInstance = new CollectorRegistry(), AddLegacyMetrics = true });
+            { Port = fixture.Port, CollectorRegistry = new CollectorRegistry(), AddLegacyMetrics = true });
 
         try
         {
@@ -267,7 +267,7 @@ public class MetricServerTests(PortFixture fixture, ITestOutputHelper testOutput
         var registry = new CollectorRegistry();
         var factory = new MetricFactory(registry);
         _metricServer = new MetricServer(
-            new MetricServerOptions { Port = fixture.Port, CollectorRegistryInstance = registry, ResponseEncoding = Encoding.UTF8 });
+            new MetricServerOptions { Port = fixture.Port, CollectorRegistry = registry, ResponseEncoding = Encoding.UTF8 });
 
         try
         {
