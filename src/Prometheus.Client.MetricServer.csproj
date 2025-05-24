@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>Standalone Kestrel server for the Prometheus.Client</Description>
+    <Description>Standalone Kestrel server for Prometheus.Client</Description>
     <TargetFramework>net8.0</TargetFramework>
     <RepositoryUrl>https://github.com/prom-client-net/prom-client-metricserver</RepositoryUrl>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
