@@ -51,7 +51,7 @@ public static async Task Main(string[] args)
             services.AddSingleton<IMetricServer>(sp => new MetricServer(
                 new MetricServerOptions
                 {
-                    CollectorRegistryInstance = sp.GetRequiredService<ICollectorRegistry>(),
+                    CollectorRegistry = sp.GetRequiredService<ICollectorRegistry>(),
                     UseDefaultCollectors = true
                 }));
             services.AddHostedService<Worker>();
